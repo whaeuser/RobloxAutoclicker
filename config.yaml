@@ -1,46 +1,6 @@
-# Roblox Autoclicker Konfiguration
-
-# Klicks pro Sekunde (CPS)
-# Höhere Werte = schnelleres Klicken
-# Empfohlen: 8-15 für die meisten Spiele
-clicks_per_second: 12
-
-# Hotkey zum Aktivieren des Autoclickers
-# Mögliche Werte:
-#   - shift          (linke Shift-Taste)
-#   - shift_r        (rechte Shift-Taste)
-#   - ctrl           (linke Strg-Taste)
-#   - ctrl_r         (rechte Strg-Taste)
-#   - alt            (linke Alt-Taste)
-#   - alt_r          (rechte Alt-Taste)
-#   - space          (Leertaste)
-#   - tab            (Tab-Taste)
-#   - caps_lock      (Caps Lock)
-#   - f1 bis f12     (Funktionstasten)
-hotkey: shift
-
-# Klick-Position
-# null = klickt an aktueller Mausposition
-# [x, y] = klickt an fester Position (z.B. [500, 300])
-# Tipp: Um Position herauszufinden, Maus positionieren und in Python:
-#       import pyautogui; print(pyautogui.position())
-target_position: null
-
-# Logging aktivieren
-# true = zeigt jeden Klick in der Konsole
-# false = keine Ausgabe (bessere Performance)
-#enable_logging: false
-enable_logging: true
-
-# Klick-Modus
-# Mögliche Werte:
-#   - fast       (Schneller Klick - empfohlen, keine Verzögerung)
-#   - standard   (Standard PyAutoGUI mit kleiner Pause)
-#   - separate   (Separate Down/Up Events - maximale Geschwindigkeit)
-#   - right      (Rechtsklick statt Linksklick)
+activation_mode: hold
 click_mode: fast
-
-# Exit-Hotkey (zum Beenden des Programms)
-# Standard: ESC-Taste
-# ACHTUNG: Diese Einstellung kann aktuell nicht geändert werden
-# Das Programm wird mit STRG+ESC beendet
+clicks_per_second: 12
+enable_logging: true
+hotkey: shift
+target_position: null

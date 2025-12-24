@@ -330,8 +330,8 @@ HTML_TEMPLATE = '''
 
                 <div style="margin-top: 30px; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 10px;">
                     <strong>ℹ️ Hinweise:</strong><br>
-                    • <strong>Shift halten</strong> = Clicking aktivieren<br>
-                    • <strong>Shift loslassen</strong> = Clicking deaktivieren<br>
+                    • <strong>Hold-Modus:</strong> Taste halten = Clicking aktiv<br>
+                    • <strong>Toggle-Modus:</strong> Taste drücken = Ein/Aus umschalten<br>
                     • <strong>ESC</strong> = Autoclicker beenden<br>
                     • Stelle sicher dass Python <strong>Accessibility-Berechtigung</strong> hat!
                 </div>
@@ -364,6 +364,15 @@ HTML_TEMPLATE = '''
                             <option value="f8">F8</option>
                             <option value="f9">F9</option>
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activationMode">Aktivierungs-Modus</label>
+                        <select id="activationMode" name="activationMode" required>
+                            <option value="hold">Hold (Halten)</option>
+                            <option value="toggle">Toggle (Umschalten)</option>
+                        </select>
+                        <div class="help-text">Hold = Klickt beim Halten | Toggle = Ein/Aus bei jedem Druck</div>
                     </div>
 
                     <div class="form-group">
@@ -449,6 +458,7 @@ HTML_TEMPLATE = '''
                     document.getElementById('cps').value = config.clicks_per_second;
                     document.getElementById('hotkey').value = config.hotkey;
                     document.getElementById('clickMode').value = config.click_mode;
+                    document.getElementById('activationMode').value = config.activation_mode || 'hold';
 
                     if (config.target_position && config.target_position.length === 2) {
                         document.getElementById('targetX').value = config.target_position[0];
@@ -473,6 +483,7 @@ HTML_TEMPLATE = '''
                 clicks_per_second: parseInt(document.getElementById('cps').value),
                 hotkey: document.getElementById('hotkey').value,
                 click_mode: document.getElementById('clickMode').value,
+                activation_mode: document.getElementById('activationMode').value,
                 target_position: targetPosition,
                 enable_logging: true
             };
@@ -629,7 +640,18 @@ def start_autoclicker():
         if autoclicker_process and autoclicker_process.poll() is None:
             return jsonify({'success': False, 'error': 'Autoclicker läuft bereits'})
 
-        script_path = Path(__file__).parent / "debug_autoclicker.py"
+        # Config laden um activation_mode zu lesen
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+
+        activation_mode = config.get('activation_mode', 'hold')
+
+        # Wähle das richtige Skript basierend auf dem Modus
+        if activation_mode == 'toggle':
+            script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+        else:
+            script_path = Path(__file__).parent / "debug_autoclicker.py"
+
         autoclicker_process = subprocess.Popen(
             ['python3', str(script_path)],
             stdout=subprocess.PIPE,
