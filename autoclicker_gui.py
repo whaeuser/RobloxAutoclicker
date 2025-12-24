@@ -81,22 +81,27 @@ class AutoclickerGUI:
                         bg=bg_color, fg="white", padx=25, pady=12)
         label.pack()
 
+        # State als Attribut speichern, nicht als Closure-Variable
+        frame.button_enabled = (state == tk.NORMAL)
+        frame.normal_color = bg_color
+        frame.hover_color = hover_color
+
         if state == tk.DISABLED:
             frame.config(bg="#94a3b8")
             label.config(bg="#94a3b8")
 
         def on_enter(e):
-            if state == tk.NORMAL:
-                frame.config(bg=hover_color)
-                label.config(bg=hover_color)
+            if frame.button_enabled:
+                frame.config(bg=frame.hover_color)
+                label.config(bg=frame.hover_color)
 
         def on_leave(e):
-            if state == tk.NORMAL:
-                frame.config(bg=bg_color)
-                label.config(bg=bg_color)
+            if frame.button_enabled:
+                frame.config(bg=frame.normal_color)
+                label.config(bg=frame.normal_color)
 
         def on_click(e):
-            if state == tk.NORMAL:
+            if frame.button_enabled:
                 command()
 
         frame.bind("<Enter>", on_enter)
@@ -469,8 +474,13 @@ class AutoclickerGUI:
             output_thread.start()
 
             # Buttons aktualisieren
+            self.start_btn_frame.button_enabled = False
             self.start_btn_frame.config(bg="#94a3b8", cursor="arrow")
             self.start_btn_label.config(bg="#94a3b8")
+
+            self.stop_btn_frame.button_enabled = True
+            self.stop_btn_frame.normal_color = "#dc2626"
+            self.stop_btn_frame.hover_color = "#b91c1c"
             self.stop_btn_frame.config(bg="#dc2626", cursor="hand2")
             self.stop_btn_label.config(bg="#dc2626")
 
@@ -491,13 +501,30 @@ class AutoclickerGUI:
         try:
             self.log("⏹️  Stoppe Autoclicker...")
 
-            os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-            self.process.wait(timeout=5)
+            # Versuche zuerst SIGTERM
+            try:
+                os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+                self.process.wait(timeout=2)
+            except:
+                # Falls SIGTERM nicht funktioniert, versuche SIGKILL
+                try:
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                    self.process.wait(timeout=2)
+                except:
+                    # Letzter Versuch: direkt kill
+                    self.process.kill()
+                    self.process.wait(timeout=2)
+
             self.process = None
 
             # Buttons aktualisieren
+            self.start_btn_frame.button_enabled = True
+            self.start_btn_frame.normal_color = "#22c55e"
+            self.start_btn_frame.hover_color = "#16a34a"
             self.start_btn_frame.config(bg="#22c55e", cursor="hand2")
             self.start_btn_label.config(bg="#22c55e")
+
+            self.stop_btn_frame.button_enabled = False
             self.stop_btn_frame.config(bg="#94a3b8", cursor="arrow")
             self.stop_btn_label.config(bg="#94a3b8")
 
