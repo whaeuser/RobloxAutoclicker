@@ -163,9 +163,8 @@ def click_worker():
     log(f"Worker beendet. Gesamt: {_click_counter} Klicks", "WORKER")
 
 def on_press(key):
-    global _clicking, _current_key
+    global _clicking, _current_key, _stop_thread
 
-    log(f"Taste gedrückt: {key}", "KEY")
     _current_key = str(key)
 
     if key == _config['hotkey_obj']:
@@ -173,10 +172,15 @@ def on_press(key):
         log("🟢 CLICKING AKTIVIERT!", "STATUS")
         verbose_log(f"⌨️  KEY PRESSED: {key} → Clicking AKTIVIERT")
 
+    # ESC zum Beenden (auf Press UND Release reagieren)
+    if key == keyboard.Key.esc:
+        log("ESC gedrückt - beende Programm...", "EXIT")
+        _stop_thread = True
+        return False
+
 def on_release(key):
     global _clicking, _stop_thread, _current_key
 
-    log(f"Taste losgelassen: {key}", "KEY")
     _current_key = None
 
     if key == _config['hotkey_obj']:
@@ -239,8 +243,12 @@ def main():
 
     # Keyboard Listener
     log("Starte Keyboard-Listener...", "SYSTEM")
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    try:
+        with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            listener.join()
+    except KeyboardInterrupt:
+        log("Strg+C erkannt - beende Programm...", "EXIT")
+        _stop_thread = True
 
     log("Programm beendet", "EXIT")
     time.sleep(0.1)

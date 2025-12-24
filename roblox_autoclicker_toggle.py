@@ -162,7 +162,7 @@ def _click_worker():
             time.sleep(0.01)
 
 def on_press(key):
-    global _clicking, _key_pressed, _current_key
+    global _clicking, _key_pressed, _current_key, _stop_thread
 
     _current_key = str(key)
 
@@ -173,6 +173,12 @@ def on_press(key):
         status = "▶️  GESTARTET" if _clicking else "⏸️  GESTOPPT"
         print(f"\n{status}")
         _verbose_log(f"⌨️  KEY PRESSED: {key} → Clicking {'AKTIVIERT' if _clicking else 'DEAKTIVIERT'}")
+
+    # ESC zum Beenden
+    if key == keyboard.Key.esc:
+        print("\n🛑 ESC gedrückt - beende Programm...")
+        _stop_thread = True
+        return False
 
 def on_release(key):
     global _stop_thread, _key_pressed, _current_key
@@ -233,7 +239,7 @@ def main():
     print(f"Logging: {'AN' if _config.get('enable_logging') else 'AUS'}")
     print("=" * 50)
     print("💡 Drücke die Hotkey-Taste zum Starten/Stoppen")
-    print("🛑 Beenden mit STRG+ESC")
+    print("🛑 Beenden mit ESC oder Strg+C")
     print("=" * 50)
 
     # Worker-Thread starten
@@ -241,8 +247,12 @@ def main():
     worker.start()
 
     # Keyboard Listener
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        listener.join()
+    try:
+        with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            listener.join()
+    except KeyboardInterrupt:
+        print("\n🛑 Strg+C erkannt - beende Programm...")
+        _stop_thread = True
 
     print("\n✅ Autoclicker beendet")
     time.sleep(0.1)
