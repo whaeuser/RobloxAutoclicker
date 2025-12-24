@@ -4,4 +4,4 @@ clicks_per_second: 12
 enable_logging: true
 hotkey: shift
 target_position: null
-verbose_mode: false
+verbose_mode: true

@@ -20,5 +20,8 @@ build/
 .DS_Store
 Thumbs.db
 
+# macOS App Bundle (build artifact)
+*.app/
+
 # Config (if contains sensitive data)
 # config.yaml
