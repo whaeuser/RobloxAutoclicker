@@ -83,13 +83,23 @@ _clicking = False
 _stop_thread = False
 _config = None
 _key_pressed = False  # Verhindert mehrfaches Togglen beim Halten
+_current_key = None
+_click_counter = 0
 
 def _log(msg):
     if _config and _config.get('enable_logging', False):
         print(f"[{time.strftime('%H:%M:%S')}] {msg}")
 
+def _verbose_log(msg):
+    """Zeigt detaillierte Logs nur im Verbose-Modus"""
+    if _config and _config.get('verbose_mode', False):
+        timestamp = time.strftime('%H:%M:%S.%f')[:-3]  # Mit Millisekunden
+        print(f"[{timestamp}] {msg}")
+
 def _perform_click(target_pos, click_mode):
     """Führt einen Klick basierend auf dem konfigurierten Modus aus"""
+    global _click_counter
+
     x, y = None, None
     if target_pos is not None and isinstance(target_pos, list) and len(target_pos) == 2:
         x, y = target_pos[0], target_pos[1]
@@ -98,31 +108,45 @@ def _perform_click(target_pos, click_mode):
         # Schneller Klick ohne Verzögerung
         if x is not None and y is not None:
             pyautogui.click(x=x, y=y, duration=0)
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=fast")
         else:
+            current_pos = pyautogui.position()
             pyautogui.click(duration=0)
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=fast")
 
     elif click_mode == 'separate':
         # Separate Down/Up Events - maximale Geschwindigkeit
         if x is not None and y is not None:
             pyautogui.mouseDown(x=x, y=y, button='left')
             pyautogui.mouseUp(x=x, y=y, button='left')
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=separate")
         else:
+            current_pos = pyautogui.position()
             pyautogui.mouseDown(button='left')
             pyautogui.mouseUp(button='left')
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=separate")
 
     elif click_mode == 'right':
         # Rechtsklick
         if x is not None and y is not None:
             pyautogui.click(x=x, y=y, button='right', duration=0)
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=right")
         else:
+            current_pos = pyautogui.position()
             pyautogui.click(button='right', duration=0)
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=right")
 
     else:  # standard
         # Standard PyAutoGUI Klick
         if x is not None and y is not None:
             pyautogui.click(x=x, y=y)
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=standard")
         else:
+            current_pos = pyautogui.position()
             pyautogui.click()
+            _verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=standard")
+
+    _click_counter += 1
 
 def _click_worker():
     global _clicking, _stop_thread
@@ -133,13 +157,14 @@ def _click_worker():
     while not _stop_thread:
         if _clicking:
             _perform_click(target_pos, click_mode)
-            _log("Klick")
             time.sleep(interval)
         else:
             time.sleep(0.01)
 
 def on_press(key):
-    global _clicking, _key_pressed
+    global _clicking, _key_pressed, _current_key
+
+    _current_key = str(key)
 
     # Toggle-Modus: Beim Drücken der Taste umschalten
     if key == _config['hotkey_obj'] and not _key_pressed:
@@ -147,13 +172,15 @@ def on_press(key):
         _key_pressed = True
         status = "▶️  GESTARTET" if _clicking else "⏸️  GESTOPPT"
         print(f"\n{status}")
+        _verbose_log(f"⌨️  KEY PRESSED: {key} → Clicking {'AKTIVIERT' if _clicking else 'DEAKTIVIERT'}")
 
 def on_release(key):
-    global _stop_thread, _key_pressed
+    global _stop_thread, _key_pressed, _current_key
 
     # Key-Pressed zurücksetzen für nächsten Toggle
     if key == _config['hotkey_obj']:
         _key_pressed = False
+        _current_key = None if not _clicking else _current_key  # Key nur zurücksetzen wenn nicht mehr clickt
 
     # STRG + ESC zum Beenden
     if isinstance(key, keyboard.KeyCode) and key.char == '\x1b':
@@ -162,6 +189,26 @@ def on_release(key):
 
 def main():
     global _config
+
+    # Prüfe ob bereits ein Autoclicker läuft und beende ihn
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['pgrep', '-f', 'roblox_autoclicker|debug_autoclicker'],
+            capture_output=True,
+            text=True
+        )
+        if result.stdout.strip():
+            pids = result.stdout.strip().split('\n')
+            current_pid = str(os.getpid())
+            for pid in pids:
+                if pid and pid != current_pid:
+                    print(f"⚠️  Anderer Autoclicker läuft bereits (PID: {pid}), beende...")
+                    os.system(f"kill -9 {pid} 2>/dev/null")
+                    time.sleep(0.5)
+            print("✅ Alte Prozesse beendet\n")
+    except Exception as e:
+        pass  # Fehler ignorieren, Script trotzdem starten
 
     # Konfiguration laden
     _config = load_config()

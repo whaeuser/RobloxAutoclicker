@@ -8,6 +8,7 @@ Debug-Version des Autoclickers mit ausführlichem Logging
 import time
 import threading
 import sys
+import os
 from pathlib import Path
 from pynput import keyboard
 import pyautogui
@@ -82,6 +83,13 @@ _clicking = False
 _stop_thread = False
 _config = None
 _click_counter = 0
+_current_key = None
+
+def verbose_log(msg):
+    """Zeigt detaillierte Logs nur im Verbose-Modus"""
+    if _config and _config.get('verbose_mode', False):
+        timestamp = time.strftime('%H:%M:%S.%f')[:-3]  # Mit Millisekunden
+        print(f"[{timestamp}] {msg}")
 
 def perform_click(target_pos, click_mode):
     """Führt einen Klick aus"""
@@ -95,34 +103,40 @@ def perform_click(target_pos, click_mode):
         if click_mode == 'fast':
             if x is not None and y is not None:
                 pyautogui.click(x=x, y=y, duration=0)
-                log(f"Klick #{_click_counter} an Position ({x}, {y})", "CLICK")
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=fast")
             else:
                 current_pos = pyautogui.position()
                 pyautogui.click(duration=0)
-                log(f"Klick #{_click_counter} an aktueller Position {current_pos}", "CLICK")
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=fast")
 
         elif click_mode == 'separate':
             if x is not None and y is not None:
                 pyautogui.mouseDown(x=x, y=y, button='left')
                 pyautogui.mouseUp(x=x, y=y, button='left')
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=separate")
             else:
+                current_pos = pyautogui.position()
                 pyautogui.mouseDown(button='left')
                 pyautogui.mouseUp(button='left')
-            log(f"Klick #{_click_counter} (separate events)", "CLICK")
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=separate")
 
         elif click_mode == 'right':
             if x is not None and y is not None:
                 pyautogui.click(x=x, y=y, button='right', duration=0)
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=right")
             else:
+                current_pos = pyautogui.position()
                 pyautogui.click(button='right', duration=0)
-            log(f"Rechtsklick #{_click_counter}", "CLICK")
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=right")
 
         else:  # standard
             if x is not None and y is not None:
                 pyautogui.click(x=x, y=y)
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({x},{y}) | Key={_current_key} | Mode=standard")
             else:
+                current_pos = pyautogui.position()
                 pyautogui.click()
-            log(f"Klick #{_click_counter} (standard)", "CLICK")
+                verbose_log(f"🖱️  CLICK #{_click_counter} | Pos=({current_pos.x},{current_pos.y}) | Key={_current_key} | Mode=standard")
 
         _click_counter += 1
 
@@ -149,22 +163,26 @@ def click_worker():
     log(f"Worker beendet. Gesamt: {_click_counter} Klicks", "WORKER")
 
 def on_press(key):
-    global _clicking
+    global _clicking, _current_key
 
     log(f"Taste gedrückt: {key}", "KEY")
+    _current_key = str(key)
 
     if key == _config['hotkey_obj']:
         _clicking = True
         log("🟢 CLICKING AKTIVIERT!", "STATUS")
+        verbose_log(f"⌨️  KEY PRESSED: {key} → Clicking AKTIVIERT")
 
 def on_release(key):
-    global _clicking, _stop_thread
+    global _clicking, _stop_thread, _current_key
 
     log(f"Taste losgelassen: {key}", "KEY")
+    _current_key = None
 
     if key == _config['hotkey_obj']:
         _clicking = False
         log("🔴 CLICKING DEAKTIVIERT!", "STATUS")
+        verbose_log(f"⌨️  KEY RELEASED: {key} → Clicking DEAKTIVIERT")
 
     # ESC zum Beenden
     if key == keyboard.Key.esc:
@@ -178,6 +196,26 @@ def main():
     print("\n" + "=" * 70)
     print("🐛 DEBUG MODE - Roblox Autoclicker")
     print("=" * 70 + "\n")
+
+    # Prüfe ob bereits ein Autoclicker läuft und beende ihn
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['pgrep', '-f', 'roblox_autoclicker|debug_autoclicker'],
+            capture_output=True,
+            text=True
+        )
+        if result.stdout.strip():
+            pids = result.stdout.strip().split('\n')
+            current_pid = str(os.getpid())
+            for pid in pids:
+                if pid and pid != current_pid:
+                    print(f"⚠️  Anderer Autoclicker läuft bereits (PID: {pid}), beende...")
+                    os.system(f"kill -9 {pid} 2>/dev/null")
+                    time.sleep(0.5)
+            print("✅ Alte Prozesse beendet\n")
+    except Exception as e:
+        pass  # Fehler ignorieren, Script trotzdem starten
 
     # Config laden
     _config = load_config()

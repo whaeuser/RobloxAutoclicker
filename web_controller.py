@@ -11,8 +11,22 @@ import subprocess
 import os
 import signal
 from pathlib import Path
+import logging
+from datetime import datetime
 
 app = Flask(__name__)
+
+# Logging konfigurieren - nur wichtige Meldungen anzeigen
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)  # Nur Fehler von werkzeug anzeigen
+
+def log_action(action, details=""):
+    """Zeigt wichtige Aktionen an"""
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    if details:
+        print(f"[{timestamp}] {action} - {details}")
+    else:
+        print(f"[{timestamp}] {action}")
 
 # Globale Variablen
 autoclicker_process = None
@@ -397,6 +411,14 @@ HTML_TEMPLATE = '''
                         <div class="help-text">Optional: Feste Y-Koordinate</div>
                     </div>
 
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="verboseMode" name="verboseMode" style="width: auto; margin-right: 10px;">
+                            <span>Verbose/Debug-Modus</span>
+                        </label>
+                        <div class="help-text">Zeigt jeden Klick mit Timestamp, Position und Taste im Terminal</div>
+                    </div>
+
                     <button type="submit" class="btn-save" style="width: 100%;">
                         💾 Konfiguration speichern
                     </button>
@@ -459,6 +481,7 @@ HTML_TEMPLATE = '''
                     document.getElementById('hotkey').value = config.hotkey;
                     document.getElementById('clickMode').value = config.click_mode;
                     document.getElementById('activationMode').value = config.activation_mode || 'hold';
+                    document.getElementById('verboseMode').checked = config.verbose_mode || false;
 
                     if (config.target_position && config.target_position.length === 2) {
                         document.getElementById('targetX').value = config.target_position[0];
@@ -493,7 +516,8 @@ HTML_TEMPLATE = '''
                         click_mode: document.getElementById('clickMode').value,
                         activation_mode: document.getElementById('activationMode').value,
                         target_position: targetPosition,
-                        enable_logging: true
+                        enable_logging: true,
+                        verbose_mode: document.getElementById('verboseMode').checked
                     };
 
                     fetch('/api/config', {
@@ -622,6 +646,7 @@ HTML_TEMPLATE = '''
 
 @app.route('/')
 def index():
+    log_action("🌐 Web-Interface aufgerufen")
     return render_template_string(HTML_TEMPLATE)
 
 @app.route('/api/config', methods=['GET'])
@@ -649,6 +674,7 @@ def save_config():
                 os.killpg(os.getpgid(autoclicker_process.pid), signal.SIGTERM)
                 autoclicker_process.wait(timeout=5)
                 autoclicker_process = None
+                log_action("⏸️  Autoclicker gestoppt", "für Config-Update")
             except:
                 pass
 
@@ -656,24 +682,43 @@ def save_config():
         with open(config_path, 'w', encoding='utf-8') as f:
             yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
+        cps = config.get('clicks_per_second', '?')
+        mode = config.get('activation_mode', 'hold')
+        pos = config.get('target_position')
+        pos_str = f"Pos=({pos[0]},{pos[1]})" if pos and len(pos) == 2 else "Pos=Maus"
+        verbose = "Verbose=AN" if config.get('verbose_mode', False) else "Verbose=AUS"
+        log_action("💾 Konfiguration gespeichert", f"CPS={cps} | Modus={mode} | {pos_str} | {verbose}")
+
         # Autoclicker wieder starten falls er vorher lief
         if was_running:
             activation_mode = config.get('activation_mode', 'hold')
 
             if activation_mode == 'toggle':
                 script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+                script_name = "Toggle"
             else:
                 script_path = Path(__file__).parent / "debug_autoclicker.py"
+                script_name = "Hold"
 
-            autoclicker_process = subprocess.Popen(
-                ['python3', str(script_path)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                preexec_fn=os.setsid
-            )
+            # Im Verbose-Modus: Ausgabe direkt ins Terminal, sonst unterdrücken
+            if config.get('verbose_mode', False):
+                autoclicker_process = subprocess.Popen(
+                    ['python3', str(script_path)],
+                    preexec_fn=os.setsid
+                )
+            else:
+                autoclicker_process = subprocess.Popen(
+                    ['python3', str(script_path)],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    preexec_fn=os.setsid
+                )
+            verbose_suffix = " [V]" if config.get('verbose_mode', False) else ""
+            log_action("▶️  Autoclicker neu gestartet", f"{script_name}-Modus | CPS={cps} | {pos_str}{verbose_suffix}")
 
         return jsonify({'success': True, 'restarted': was_running})
     except Exception as e:
+        log_action("❌ Fehler beim Config-Speichern", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/start', methods=['POST'])
@@ -683,6 +728,7 @@ def start_autoclicker():
 
     try:
         if autoclicker_process and autoclicker_process.poll() is None:
+            log_action("⚠️  Start fehlgeschlagen", "Autoclicker läuft bereits")
             return jsonify({'success': False, 'error': 'Autoclicker läuft bereits'})
 
         # Config laden um activation_mode zu lesen
@@ -690,22 +736,39 @@ def start_autoclicker():
             config = yaml.safe_load(f)
 
         activation_mode = config.get('activation_mode', 'hold')
+        cps = config.get('clicks_per_second', '?')
+        hotkey = config.get('hotkey', '?')
+        pos = config.get('target_position')
+        pos_str = f"({pos[0]},{pos[1]})" if pos and len(pos) == 2 else "Mausposition"
+        verbose = "V" if config.get('verbose_mode', False) else ""
 
         # Wähle das richtige Skript basierend auf dem Modus
         if activation_mode == 'toggle':
             script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+            mode_name = "Toggle"
         else:
             script_path = Path(__file__).parent / "debug_autoclicker.py"
+            mode_name = "Hold"
 
-        autoclicker_process = subprocess.Popen(
-            ['python3', str(script_path)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            preexec_fn=os.setsid
-        )
+        # Im Verbose-Modus: Ausgabe direkt ins Terminal, sonst unterdrücken
+        if config.get('verbose_mode', False):
+            autoclicker_process = subprocess.Popen(
+                ['python3', str(script_path)],
+                preexec_fn=os.setsid
+            )
+        else:
+            autoclicker_process = subprocess.Popen(
+                ['python3', str(script_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid
+            )
 
+        verbose_suffix = f" [V]" if verbose else ""
+        log_action("▶️  Autoclicker gestartet", f"{mode_name}-Modus | CPS={cps} | Hotkey={hotkey} | Pos={pos_str}{verbose_suffix}")
         return jsonify({'success': True})
     except Exception as e:
+        log_action("❌ Fehler beim Starten", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/stop', methods=['POST'])
@@ -718,10 +781,13 @@ def stop_autoclicker():
             os.killpg(os.getpgid(autoclicker_process.pid), signal.SIGTERM)
             autoclicker_process.wait(timeout=5)
             autoclicker_process = None
+            log_action("⏹️  Autoclicker gestoppt", "vom Nutzer")
             return jsonify({'success': True})
         else:
+            log_action("⚠️  Stop fehlgeschlagen", "Autoclicker läuft nicht")
             return jsonify({'success': False, 'error': 'Autoclicker läuft nicht'})
     except Exception as e:
+        log_action("❌ Fehler beim Stoppen", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/status', methods=['GET'])
