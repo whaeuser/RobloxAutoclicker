@@ -471,33 +471,47 @@ HTML_TEMPLATE = '''
         function saveConfig(event) {
             event.preventDefault();
 
-            const targetX = document.getElementById('targetX').value;
-            const targetY = document.getElementById('targetY').value;
+            // Status prüfen
+            fetch('/api/status')
+                .then(r => r.json())
+                .then(status => {
+                    if (status.running) {
+                        showAlert('ℹ️ Autoclicker wird neu gestartet...', 'success');
+                    }
 
-            let targetPosition = null;
-            if (targetX && targetY) {
-                targetPosition = [parseInt(targetX), parseInt(targetY)];
-            }
+                    const targetX = document.getElementById('targetX').value;
+                    const targetY = document.getElementById('targetY').value;
 
-            const config = {
-                clicks_per_second: parseInt(document.getElementById('cps').value),
-                hotkey: document.getElementById('hotkey').value,
-                click_mode: document.getElementById('clickMode').value,
-                activation_mode: document.getElementById('activationMode').value,
-                target_position: targetPosition,
-                enable_logging: true
-            };
+                    let targetPosition = null;
+                    if (targetX && targetY) {
+                        targetPosition = [parseInt(targetX), parseInt(targetY)];
+                    }
 
-            fetch('/api/config', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(config)
-            })
-            .then(r => r.json())
-            .then(result => {
-                showAlert('✅ Konfiguration erfolgreich gespeichert!', 'success');
-            })
-            .catch(err => showAlert('❌ Fehler beim Speichern', 'error'));
+                    const config = {
+                        clicks_per_second: parseInt(document.getElementById('cps').value),
+                        hotkey: document.getElementById('hotkey').value,
+                        click_mode: document.getElementById('clickMode').value,
+                        activation_mode: document.getElementById('activationMode').value,
+                        target_position: targetPosition,
+                        enable_logging: true
+                    };
+
+                    fetch('/api/config', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(config)
+                    })
+                    .then(r => r.json())
+                    .then(result => {
+                        if (result.restarted) {
+                            showAlert('✅ Konfiguration gespeichert & Autoclicker neu gestartet!', 'success');
+                        } else {
+                            showAlert('✅ Konfiguration erfolgreich gespeichert!', 'success');
+                        }
+                        updateStatus();
+                    })
+                    .catch(err => showAlert('❌ Fehler beim Speichern', 'error'));
+                });
         }
 
         function startAutoclicker() {
@@ -622,12 +636,43 @@ def get_config():
 
 @app.route('/api/config', methods=['POST'])
 def save_config():
-    """Speichert die Konfiguration"""
+    """Speichert die Konfiguration und startet den Autoclicker neu falls er läuft"""
+    global autoclicker_process
+
     try:
         config = request.json
+        was_running = autoclicker_process is not None and autoclicker_process.poll() is None
+
+        # Autoclicker stoppen falls er läuft
+        if was_running:
+            try:
+                os.killpg(os.getpgid(autoclicker_process.pid), signal.SIGTERM)
+                autoclicker_process.wait(timeout=5)
+                autoclicker_process = None
+            except:
+                pass
+
+        # Konfiguration speichern
         with open(config_path, 'w', encoding='utf-8') as f:
             yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
-        return jsonify({'success': True})
+
+        # Autoclicker wieder starten falls er vorher lief
+        if was_running:
+            activation_mode = config.get('activation_mode', 'hold')
+
+            if activation_mode == 'toggle':
+                script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+            else:
+                script_path = Path(__file__).parent / "debug_autoclicker.py"
+
+            autoclicker_process = subprocess.Popen(
+                ['python3', str(script_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid
+            )
+
+        return jsonify({'success': True, 'restarted': was_running})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

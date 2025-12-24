@@ -154,9 +154,8 @@ def on_press(key):
     log(f"Taste gedrückt: {key}", "KEY")
 
     if key == _config['hotkey_obj']:
-        if not _clicking:
-            _clicking = True
-            log("🟢 CLICKING AKTIVIERT!", "STATUS")
+        _clicking = True
+        log("🟢 CLICKING AKTIVIERT!", "STATUS")
 
 def on_release(key):
     global _clicking, _stop_thread
@@ -164,9 +163,8 @@ def on_release(key):
     log(f"Taste losgelassen: {key}", "KEY")
 
     if key == _config['hotkey_obj']:
-        if _clicking:
-            _clicking = False
-            log("🔴 CLICKING DEAKTIVIERT!", "STATUS")
+        _clicking = False
+        log("🔴 CLICKING DEAKTIVIERT!", "STATUS")
 
     # ESC zum Beenden
     if key == keyboard.Key.esc:
