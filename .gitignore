@@ -31,6 +31,7 @@ linux/
 windows/
 *.dmg
 *.AppImage
+logs/
 
 # Config (if contains sensitive data)
 # config.yaml

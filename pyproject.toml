@@ -3,21 +3,20 @@ project_name = "Roblox Autoclicker"
 bundle = "com.roblox"
 version = "1.5.0"
 url = "https://github.com/whaeuser/RobloxAutoclicker"
-license = "MIT"
 author = "whaeuser"
 author_email = "noreply@example.com"
 
 [tool.briefcase.app.robloxautoclicker]
 formal_name = "Roblox Autoclicker"
 description = "Konfigurierbarer Autoclicker für macOS"
-sources = ['autoclicker_gui_toga']
-icon = "resources/icon"  # TODO: Icon erstellen
+sources = ['robloxautoclicker']
 requires = [
     'toga>=0.4.0',
-    'pyautogui',
-    'pynput',
     'pyyaml',
 ]
+
+[tool.briefcase.app.robloxautoclicker.license]
+text = "MIT"
 
 [tool.briefcase.app.robloxautoclicker.macOS]
 requires = [

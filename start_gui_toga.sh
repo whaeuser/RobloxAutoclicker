@@ -14,5 +14,5 @@ if ! python3 -c "import toga" 2>/dev/null; then
     exit 1
 fi
 
-# Starte Toga GUI
-python3 autoclicker_gui_toga.py
+# Starte Toga GUI (filtere .py Opening Warnung)
+python3 autoclicker_gui_toga.py 2>&1 | grep -v "Don't know how to open documents with extension"
