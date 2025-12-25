@@ -22,6 +22,7 @@ Thumbs.db
 
 # macOS App Bundle (build artifact)
 *.app/
+Autoinput.app/
 
 # Briefcase/Toga Build Artifacts
 macOS/

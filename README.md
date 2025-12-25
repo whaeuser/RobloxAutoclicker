@@ -2,6 +2,17 @@
 
 Ein konfigurierbarer Autoclicker für macOS mit GUI, Web-Interface und Terminal-Unterstützung.
 
+## 🚀 Quickstart
+
+**Schnellster Start:**
+```bash
+# Option 1: Standalone App (Empfohlen)
+open Autoinput.app
+
+# Option 2: Mit Startskript
+./start.sh
+```
+
 ## 📋 Inhaltsverzeichnis
 
 - [Features](#features)
@@ -82,8 +93,19 @@ pip3 install pyautogui pynput pyyaml flask
 
 ### GUI starten (Empfohlen)
 
-**Toga GUI (Production):**
+**Option 1: Standalone App (macOS):**
 ```bash
+# Doppelklick auf Autoinput.app im Hauptverzeichnis
+# oder per Kommandozeile:
+open Autoinput.app
+```
+
+**Option 2: Python-Script:**
+```bash
+# Hauptstartskript im Root-Verzeichnis
+./start.sh
+
+# Oder aus scripts/ Ordner
 ./scripts/start_autoinput_gui.sh
 ```
 
