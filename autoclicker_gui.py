@@ -29,6 +29,8 @@ class AutoclickerGUI:
         self.click_count = 0
         self.click_start_time = None
         self.click_timestamps = []
+        self.last_click_time = None  # Für Auto-Pause
+        self.frozen_duration = 0  # Gefrorene Dauer bei Pause
 
         self.setup_ui()
         self.load_config()
@@ -543,6 +545,7 @@ class AutoclickerGUI:
         if self.click_start_time is None:
             self.click_start_time = now
 
+        self.last_click_time = now  # Letzten Klick-Zeitpunkt speichern
         self.click_timestamps.append(now)
         # Nur letzte Sekunde behalten
         self.click_timestamps = [t for t in self.click_timestamps if now - t < 1.0]
@@ -562,7 +565,17 @@ class AutoclickerGUI:
         self.current_cps_label.config(text=str(current_cps))
 
         if self.click_start_time and self.click_count > 0:
-            duration = now - self.click_start_time
+            # Auto-Pause: Friere Dauer ein, wenn 3 Sekunden nicht geklickt wurde
+            if self.last_click_time and (now - self.last_click_time) > 3.0:
+                # Pausiert - zeige gefrorene Dauer
+                if self.frozen_duration == 0:
+                    self.frozen_duration = self.last_click_time - self.click_start_time
+                duration = self.frozen_duration
+            else:
+                # Aktiv - zeige laufende Dauer
+                self.frozen_duration = 0
+                duration = now - self.click_start_time
+
             avg_cps = self.click_count / duration if duration > 0 else 0
             self.avg_cps_label.config(text=f"{avg_cps:.1f}")
             self.duration_label.config(text=f"{duration:.1f}")
@@ -574,6 +587,8 @@ class AutoclickerGUI:
         self.click_count = 0
         self.click_start_time = None
         self.click_timestamps = []
+        self.last_click_time = None
+        self.frozen_duration = 0
 
         self.click_area.itemconfig(self.click_count_text, text="0")
         self.current_cps_label.config(text="0")
