@@ -201,6 +201,41 @@ class AutoinputApp(toga.App):
         self.cps_input.value = 12
         box.add(self.cps_input)
 
+        # NEU: Input Type Selection
+        input_type_label = toga.Label("Input-Typ:", style=Pack(margin=(5, 5)))
+        box.add(input_type_label)
+
+        self.input_type_selection = toga.Selection(
+            items=['mouse', 'keyboard'],
+            on_change=self.on_input_type_changed,
+            style=Pack(margin=(5, 5))
+        )
+        box.add(self.input_type_selection)
+
+        # NEU: Keyboard Key Selection (conditional)
+        self.keyboard_key_label = toga.Label("Tastatur-Taste:", style=Pack(margin=(5, 5)))
+        box.add(self.keyboard_key_label)
+
+        self.keyboard_key_selection = toga.Selection(
+            items=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                   'space', 'enter', 'tab', 'backspace', 'delete',
+                   'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12'],
+            style=Pack(margin=(5, 5))
+        )
+        box.add(self.keyboard_key_selection)
+
+        # NEU: Keyboard Mode Selection (conditional)
+        self.keyboard_mode_label = toga.Label("Tastatur-Modus:", style=Pack(margin=(5, 5)))
+        box.add(self.keyboard_mode_label)
+
+        self.keyboard_mode_selection = toga.Selection(
+            items=['repeat', 'hold'],
+            style=Pack(margin=(5, 5))
+        )
+        box.add(self.keyboard_mode_selection)
+
         # Hotkey
         hotkey_label = toga.Label("Aktivierungs-Hotkey:", style=Pack(margin=(5, 5)))
         box.add(hotkey_label)
@@ -294,6 +329,21 @@ class AutoinputApp(toga.App):
 
         return box
 
+    def on_input_type_changed(self, widget):
+        """Zeigt/versteckt Keyboard-Controls basierend auf Auswahl"""
+        try:
+            input_type = self.input_type_selection.value
+
+            # Keyboard-Controls nur bei keyboard aktivieren
+            is_keyboard = (input_type == 'keyboard')
+
+            self.keyboard_key_label.enabled = is_keyboard
+            self.keyboard_key_selection.enabled = is_keyboard
+            self.keyboard_mode_label.enabled = is_keyboard
+            self.keyboard_mode_selection.enabled = is_keyboard
+        except:
+            pass  # Ignoriere Fehler beim Initialisieren
+
     def load_config(self):
         """Lädt die Konfiguration"""
         try:
@@ -304,6 +354,14 @@ class AutoinputApp(toga.App):
             self.hotkey_selection.value = config.get('hotkey', 'shift')
             self.activation_mode_selection.value = config.get('activation_mode', 'hold')
             self.verbose_switch.value = config.get('verbose_mode', False)
+
+            # NEU: Keyboard-Einstellungen laden
+            self.input_type_selection.value = config.get('input_type', 'mouse')
+            self.keyboard_key_selection.value = config.get('keyboard_key', 'a')
+            self.keyboard_mode_selection.value = config.get('keyboard_mode', 'repeat')
+
+            # UI aktualisieren
+            self.on_input_type_changed(None)
 
             self.update_config_display(config)
         except Exception as e:
@@ -316,7 +374,17 @@ class AutoinputApp(toga.App):
         mode = config.get('activation_mode', 'hold')
         mode_text = "Toggle" if mode == 'toggle' else "Hold"
 
-        self.config_info.text = f"Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
+        # NEU: Input-Typ Info
+        input_type = config.get('input_type', 'mouse')
+        input_type_text = "Tastatur" if input_type == 'keyboard' else "Maus"
+
+        if input_type == 'keyboard':
+            keyboard_key = config.get('keyboard_key', 'a').upper()
+            keyboard_mode = config.get('keyboard_mode', 'repeat')
+            kb_mode_text = "Halten" if keyboard_mode == 'hold' else "Wiederholen"
+            self.config_info.text = f"{input_type_text}: {keyboard_key} ({kb_mode_text}) | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
+        else:
+            self.config_info.text = f"{input_type_text} | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
 
     def save_config(self, widget):
         """Speichert die Konfiguration"""
@@ -328,7 +396,12 @@ class AutoinputApp(toga.App):
                 'click_mode': 'fast',
                 'target_position': None,
                 'enable_logging': True,
-                'verbose_mode': self.verbose_switch.value
+                'verbose_mode': self.verbose_switch.value,
+
+                # NEU: Keyboard-Einstellungen
+                'input_type': self.input_type_selection.value,
+                'keyboard_key': self.keyboard_key_selection.value,
+                'keyboard_mode': self.keyboard_mode_selection.value
             }
 
             # Autoclicker stoppen falls er läuft
