@@ -19,6 +19,7 @@ open Autoinput.app
 - [Installation](#installation)
 - [Verwendung](#verwendung)
 - [Konfiguration](#konfiguration)
+- [Build-Anleitung](#-build-anleitung) ⭐ **NEU: Für Entwickler**
 - [Architektur](#architektur)
 - [Aktueller Status](#aktueller-status)
 - [Bekannte Issues](#bekannte-issues)
@@ -166,6 +167,45 @@ verbose_mode: false          # Debug-Logs mit jedem Klick
 - **CPS**: 8-20 (Autoinput-kompatibel)
 - **Klick-Modus**: `fast`
 - **Aktivierung**: `hold` (sicherer, sofortiger Stop)
+
+---
+
+## 🔨 Build-Anleitung
+
+### Für Entwickler: App bauen
+
+**⚠️ WICHTIG:** Alle Änderungen in `src/` machen, nicht in `autoinput/`!
+
+```bash
+# Automatischer Build (Empfohlen)
+./build_app.sh
+```
+
+Das Script synchronisiert automatisch alle Scripts und baut die App neu.
+
+**Ausführliche Anleitung:** Siehe [BUILD.md](BUILD.md)
+
+### Windows .exe erstellen
+
+Auf einem Windows-PC:
+
+```bash
+python build_windows.py
+```
+
+**Ausführliche Anleitung:** Siehe [BUILD_WINDOWS.md](BUILD_WINDOWS.md)
+
+### Wichtige Dateien
+
+| Datei | Zweck | Editierbar? |
+|-------|-------|-------------|
+| `src/autoinput_toggle.py` | Toggle-Modus Script | ✅ **Hier editieren!** |
+| `src/debug_autoinput.py` | Debug-Script | ✅ **Hier editieren!** |
+| `autoinput/__main__.py` | GUI | ✅ **Hier editieren!** |
+| `autoinput/autoinput_toggle.py` | Auto-Kopie | ⚠️ **Nicht direkt editieren!** |
+| `autoinput/debug_autoinput.py` | Auto-Kopie | ⚠️ **Nicht direkt editieren!** |
+
+---
 
 ## 🏗️ Architektur
 
