@@ -1,4 +1,4 @@
-activation_mode: toggle
+activation_mode: hold
 click_mode: fast
 clicks_per_second: 12
 enable_logging: true
