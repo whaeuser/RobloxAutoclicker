@@ -200,6 +200,17 @@ class AutoinputApp(toga.App):
         """Tab für Konfiguration"""
         box = toga.Box(style=Pack(direction=COLUMN, margin=(20, 20)))
 
+        # Hotkey (VOR CPS wie gewünscht!)
+        hotkey_label = toga.Label("Aktivierungs-Hotkey:", style=Pack(margin=(5, 5)))
+        box.add(hotkey_label)
+
+        self.hotkey_selection = toga.Selection(
+            items=['shift', 'shift_r', 'ctrl', 'ctrl_r', 'alt', 'alt_r',
+                   'space', 'tab', 'f6', 'f7', 'f8', 'f9'],
+            style=Pack(margin=(5, 5))
+        )
+        box.add(self.hotkey_selection)
+
         # CPS
         cps_label = toga.Label("Klicks pro Sekunde (CPS):", style=Pack(margin=(5, 5)))
         box.add(cps_label)
@@ -212,7 +223,17 @@ class AutoinputApp(toga.App):
         self.cps_input.value = 12
         box.add(self.cps_input)
 
-        # NEU: Input Type Selection
+        # Aktivierungsmodus
+        mode_label = toga.Label("Aktivierungs-Modus:", style=Pack(margin=(5, 5)))
+        box.add(mode_label)
+
+        self.activation_mode_selection = toga.Selection(
+            items=['hold', 'toggle'],
+            style=Pack(margin=(5, 5))
+        )
+        box.add(self.activation_mode_selection)
+
+        # Input Type Selection
         input_type_label = toga.Label("Input-Typ:", style=Pack(margin=(5, 5)))
         box.add(input_type_label)
 
@@ -223,7 +244,7 @@ class AutoinputApp(toga.App):
         )
         box.add(self.input_type_selection)
 
-        # NEU: Keyboard Key Selection (conditional)
+        # Keyboard Key Selection (conditional)
         self.keyboard_key_label = toga.Label("Tastatur-Taste:", style=Pack(margin=(5, 5)))
         box.add(self.keyboard_key_label)
 
@@ -237,7 +258,7 @@ class AutoinputApp(toga.App):
         )
         box.add(self.keyboard_key_selection)
 
-        # NEU: Keyboard Mode Selection (conditional)
+        # Keyboard Mode Selection (conditional)
         self.keyboard_mode_label = toga.Label("Tastatur-Modus:", style=Pack(margin=(5, 5)))
         box.add(self.keyboard_mode_label)
 
@@ -246,27 +267,6 @@ class AutoinputApp(toga.App):
             style=Pack(margin=(5, 5))
         )
         box.add(self.keyboard_mode_selection)
-
-        # Hotkey
-        hotkey_label = toga.Label("Aktivierungs-Hotkey:", style=Pack(margin=(5, 5)))
-        box.add(hotkey_label)
-
-        self.hotkey_selection = toga.Selection(
-            items=['shift', 'shift_r', 'ctrl', 'ctrl_r', 'alt', 'alt_r',
-                   'space', 'tab', 'f6', 'f7', 'f8', 'f9'],
-            style=Pack(margin=(5, 5))
-        )
-        box.add(self.hotkey_selection)
-
-        # Aktivierungsmodus
-        mode_label = toga.Label("Aktivierungs-Modus:", style=Pack(margin=(5, 5)))
-        box.add(mode_label)
-
-        self.activation_mode_selection = toga.Selection(
-            items=['hold', 'toggle'],
-            style=Pack(margin=(5, 5))
-        )
-        box.add(self.activation_mode_selection)
 
         # Verbose Mode
         self.verbose_switch = toga.Switch(

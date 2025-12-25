@@ -13,8 +13,6 @@ sources = ['autoinput']
 requires = [
     'toga>=0.4.0',
     'pyyaml',
-    'pyautogui',
-    'pynput',
 ]
 
 [tool.briefcase.app.autoinput.license]
@@ -28,8 +26,6 @@ requires = [
 [tool.briefcase.app.autoinput.windows]
 requires = [
     'toga-winforms>=0.4.0',
-    'pyautogui',
-    'pynput',
 ]
 
 [build-system]
