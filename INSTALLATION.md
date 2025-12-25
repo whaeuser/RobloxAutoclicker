@@ -1,4 +1,4 @@
-# Roblox Autoclicker - Installation
+# Autoinput - Installation
 
 ## Installation auf dem Entwicklungs-Mac
 
@@ -6,17 +6,17 @@
 
 ```bash
 # Toga GUI starten
-./start_gui_toga.sh
+./start_autoinput_gui_toga.sh
 
 # Oder direkt mit Python
-python3 autoclicker_gui_toga.py
+python3 autoinput_gui_toga.py
 ```
 
 ### Option 2: Standalone macOS App verwenden
 
 ```bash
 # App direkt öffnen
-open "build/robloxautoclicker/macos/app/Roblox Autoclicker.app"
+open "build/autoinput/macos/app/Autoinput.app"
 ```
 
 ---
@@ -27,7 +27,7 @@ Die App verwendet eine Ad-hoc-Signatur und benötigt daher eine manuelle Freigab
 
 ### Schritt 1: DMG übertragen
 
-Kopiere die Datei `dist/Roblox Autoclicker-1.5.0.dmg` auf den Ziel-Mac.
+Kopiere die Datei `dist/Autoinput-1.5.0.dmg` auf den Ziel-Mac.
 
 ### Schritt 2: Installation
 
@@ -35,22 +35,22 @@ Kopiere die Datei `dist/Roblox Autoclicker-1.5.0.dmg` auf den Ziel-Mac.
 
 ```bash
 # 1. DMG öffnen
-open "Roblox Autoclicker-1.5.0.dmg"
+open "Autoinput-1.5.0.dmg"
 
 # 2. App in Applications-Ordner ziehen (im Finder-Fenster das erscheint)
 
 # 3. Sicherheitsattribute entfernen
-xattr -cr "/Applications/Roblox Autoclicker.app"
+xattr -cr "/Applications/Autoinput.app"
 
 # 4. App starten
-open "/Applications/Roblox Autoclicker.app"
+open "/Applications/Autoinput.app"
 ```
 
 **Option B - Ohne Terminal:**
 
 1. DMG-Datei doppelklicken
-2. Im geöffneten Fenster die App "Roblox Autoclicker" in den "Applications"-Ordner ziehen
-3. **Rechtsklick** auf "Roblox Autoclicker.app" → "Öffnen" wählen
+2. Im geöffneten Fenster die App "Autoinput" in den "Applications"-Ordner ziehen
+3. **Rechtsklick** auf "Autoinput.app" → "Öffnen" wählen
 4. Im Sicherheitsdialog auf "Öffnen" klicken
 5. Ab jetzt funktioniert auch normales Doppelklicken
 
@@ -101,7 +101,7 @@ Beim ersten Start:
 Beim ersten Start fragt macOS nach Berechtigungen:
 
 1. **Systemeinstellungen** → **Sicherheit** → **Datenschutz**
-2. **Bedienungshilfen** aktivieren für "Roblox Autoclicker"
+2. **Bedienungshilfen** aktivieren für "Autoinput"
 3. Falls nötig: **Bildschirmaufnahme** ebenfalls aktivieren
 
 ---
@@ -110,10 +110,10 @@ Beim ersten Start fragt macOS nach Berechtigungen:
 
 ```bash
 # App löschen
-rm -rf "/Applications/Roblox Autoclicker.app"
+rm -rf "/Applications/Autoinput.app"
 
 # Optional: Log-Dateien löschen
-rm -f /tmp/roblox_autoclicker_toga.log
+rm -f /tmp/autoinput_toga.log
 ```
 
 ---
@@ -124,7 +124,7 @@ rm -f /tmp/roblox_autoclicker_toga.log
 
 **Lösung:**
 ```bash
-xattr -cr "/Applications/Roblox Autoclicker.app"
+xattr -cr "/Applications/Autoinput.app"
 ```
 
 Oder: Rechtsklick → "Öffnen" statt Doppelklick
@@ -170,19 +170,19 @@ briefcase build
 # DMG-Installer erstellen
 briefcase package --adhoc-sign
 
-# Ergebnis: dist/Roblox Autoclicker-1.5.0.dmg
+# Ergebnis: dist/Autoinput-1.5.0.dmg
 ```
 
 ### Projekt-Struktur
 
 ```
-RobloxAutoclicker/
-├── autoclicker_gui_toga.py      # Hauptdatei (Standalone)
-├── robloxautoclicker/            # Package für Briefcase
+Autoinput/
+├── autoinput_gui_toga.py        # Hauptdatei (Standalone)
+├── autoinput/                   # Package für Briefcase
 │   ├── __init__.py
-│   ├── __main__.py              # Kopie von autoclicker_gui_toga.py
-│   ├── debug_autoclicker.py     # Hold-Modus Script
-│   ├── roblox_autoclicker_toggle.py  # Toggle-Modus Script
+│   ├── __main__.py              # Kopie von autoinput_gui_toga.py
+│   ├── debug_autoinput.py       # Hold-Modus Script
+│   ├── autoinput_toggle.py      # Toggle-Modus Script
 │   └── config.yaml              # Konfiguration
 ├── pyproject.toml               # Briefcase-Konfiguration
 ├── build/                       # Build-Artifacts (nicht versioniert)
@@ -198,4 +198,4 @@ MIT License - Siehe LICENSE-Datei für Details
 ## Support
 
 Bei Problemen oder Fragen öffne ein Issue auf GitHub:
-https://github.com/whaeuser/RobloxAutoclicker/issues
+https://github.com/whaeuser/Autoinput/issues

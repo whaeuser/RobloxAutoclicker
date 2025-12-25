@@ -198,14 +198,14 @@ def main():
     global _config
 
     print("\n" + "=" * 70)
-    print("🐛 DEBUG MODE - Roblox Autoclicker")
+    print("🐛 DEBUG MODE - Autoinput")
     print("=" * 70 + "\n")
 
     # Prüfe ob bereits ein Autoclicker läuft und beende ihn
     try:
         import subprocess
         result = subprocess.run(
-            ['pgrep', '-f', 'roblox_autoclicker|debug_autoclicker'],
+            ['pgrep', '-f', 'autoinput|debug_autoclicker'],
             capture_output=True,
             text=True
         )

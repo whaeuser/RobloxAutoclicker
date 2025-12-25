@@ -1,7 +1,7 @@
 #!/bin/bash
 # Erstellt eine macOS .app Bundle für die GUI
 
-APP_NAME="Roblox Autoclicker"
+APP_NAME="Autoinput"
 APP_DIR="$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -21,11 +21,11 @@ cat > "$MACOS_DIR/launcher.sh" << 'EOF'
 #!/bin/bash
 
 # Logfile für Debugging
-LOGFILE="/tmp/roblox_autoclicker_gui.log"
+LOGFILE="/tmp/autoinput_gui.log"
 
 exec > "$LOGFILE" 2>&1
 
-echo "=== Roblox Autoclicker GUI Start ==="
+echo "=== Autoinput GUI Start ==="
 echo "Datum: $(date)"
 
 # Finde das Projektverzeichnis
@@ -59,9 +59,9 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
     <key>CFBundleExecutable</key>
     <string>launcher.sh</string>
     <key>CFBundleIdentifier</key>
-    <string>com.roblox.autoclicker</string>
+    <string>com.autoinput.autoclicker</string>
     <key>CFBundleName</key>
-    <string>Roblox Autoclicker</string>
+    <string>Autoinput</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleShortVersionString</key>

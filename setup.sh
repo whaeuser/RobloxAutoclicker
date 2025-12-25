@@ -1,10 +1,10 @@
 #!/bin/bash
-# Setup-Script für Roblox Autoclicker
+# Setup-Script für Autoinput
 # Erstellt virtual environment und installiert Dependencies
 
 set -e  # Bei Fehler abbrechen
 
-echo "🚀 Roblox Autoclicker Setup"
+echo "🚀 Autoinput Setup"
 echo "=========================="
 echo ""
 

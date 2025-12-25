@@ -38,11 +38,11 @@ pip3 install toga briefcase
 ### 2. Projektstruktur
 
 ```
-RobloxAutoclicker/
+AutoinputAutoclicker/
 ├── autoclicker_gui.py              # Tkinter (bleibt)
 ├── autoclicker_gui_toga.py         # Toga (NEU)
 ├── debug_autoclicker.py            # Backend (unverändert)
-├── roblox_autoclicker_toggle.py    # Backend (unverändert)
+├── autoinput_toggle.py    # Backend (unverändert)
 ├── config.yaml                     # Config (unverändert)
 ├── start_gui.sh                    # Startet Tkinter
 ├── start_gui_toga.sh               # Startet Toga (NEU)

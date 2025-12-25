@@ -262,7 +262,7 @@ Erstelle macOS Launch Agent (fortgeschritten):
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/python3</string>
-        <string>/Users/whaeuser/Entwicklung/RobloxAutoclicker/web_controller.py</string>
+        <string>/Users/whaeuser/Entwicklung/AutoinputAutoclicker/web_controller.py</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Startet die Roblox Autoclicker GUI
+# Startet die Autoinput GUI
 
 cd "$(dirname "$0")"
 
-echo "🎮 Starte Roblox Autoclicker GUI..."
+echo "🎮 Starte Autoinput GUI..."
 
 # Prüfe ob tkinter verfügbar ist
 if ! python3 -c "import tkinter" 2>/dev/null; then

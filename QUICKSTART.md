@@ -1,4 +1,4 @@
-# Kurzanleitung - Roblox Autoclicker
+# Kurzanleitung - Autoinput
 
 ## In 3 Schritten loslegen
 
@@ -18,7 +18,7 @@ pip3 install pynput pyautogui pyyaml
 ### 3. Starten
 
 ```bash
-cd /Users/whaeuser/Entwicklung/RobloxAutoclicker
+cd /Users/whaeuser/Entwicklung/AutoinputAutoclicker
 python3 debug_autoclicker.py
 ```
 

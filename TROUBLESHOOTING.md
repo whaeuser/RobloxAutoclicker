@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Lösungen für häufige Probleme mit dem Roblox Autoclicker.
+Lösungen für häufige Probleme mit dem Autoinput.
 
 ## Inhaltsverzeichnis
 
@@ -37,7 +37,7 @@ Lösungen für häufige Probleme mit dem Roblox Autoclicker.
 
 Schritte 1-5 wie oben, dann:
 
-6. Navigiere zu: `/Users/whaeuser/Entwicklung/RobloxAutoclicker/venv/bin/python`
+6. Navigiere zu: `/Users/whaeuser/Entwicklung/AutoinputAutoclicker/venv/bin/python`
 7. Füge hinzu
 8. Starte das Script neu
 
@@ -327,7 +327,7 @@ if _click_counter == 100:
 
 3. **Script aus richtigem Ordner starten:**
    ```bash
-   cd /Users/whaeuser/Entwicklung/RobloxAutoclicker
+   cd /Users/whaeuser/Entwicklung/AutoinputAutoclicker
    python3 debug_autoclicker.py
    ```
 
@@ -556,7 +556,7 @@ Killed: 9
 xattr -r -d com.apple.quarantine debug_autoclicker.py
 
 # Oder für ganzen Ordner
-xattr -r -d com.apple.quarantine /Users/whaeuser/Entwicklung/RobloxAutoclicker
+xattr -r -d com.apple.quarantine /Users/whaeuser/Entwicklung/AutoinputAutoclicker
 ```
 
 ---
@@ -606,7 +606,7 @@ xattr -r -d com.apple.quarantine /Users/whaeuser/Entwicklung/RobloxAutoclicker
 
 Ja, aber mit verschiedenen Hotkeys:
 
-1. Kopiere Ordner: `RobloxAutoclicker_2`
+1. Kopiere Ordner: `AutoinputAutoclicker_2`
 2. Ändere `config.yaml`:
    ```yaml
    hotkey: f6  # Statt shift
@@ -658,7 +658,7 @@ Ja, aber mit verschiedenen Hotkeys:
 
 ```
 ======================================================================
-🐛 DEBUG MODE - Roblox Autoclicker
+🐛 DEBUG MODE - Autoinput
 ======================================================================
 
 [12:00:00] [INFO] Lade Config von: /Users/.../config.yaml

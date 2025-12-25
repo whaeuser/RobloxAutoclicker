@@ -1,11 +1,11 @@
 # Code-Dokumentation
 
-Technische Dokumentation des Roblox Autoclicker Codes.
+Technische Dokumentation des Autoinput Codes.
 
 ## Datei-Übersicht
 
 ```
-RobloxAutoclicker/
+AutoinputAutoclicker/
 ├── debug_autoclicker.py    # Hauptprogramm (214 Zeilen)
 ├── config.yaml             # YAML-Konfiguration
 ├── setup.sh                # Setup-Skript für venv
@@ -472,7 +472,7 @@ def main():
 
     # Banner
     print("\n" + "=" * 70)
-    print("🐛 DEBUG MODE - Roblox Autoclicker")
+    print("🐛 DEBUG MODE - Autoinput")
     print("=" * 70 + "\n")
 
     # Config
@@ -852,11 +852,11 @@ pip install pyinstaller
 pyinstaller --onefile \
             --windowed \
             --add-data "config.yaml:." \
-            --name RobloxAutoclicker \
+            --name AutoinputAutoclicker \
             debug_autoclicker.py
 ```
 
-Erstellt: `dist/RobloxAutoclicker.app`
+Erstellt: `dist/AutoinputAutoclicker.app`
 
 **Problem:** Berechtigungen müssen für die App neu gesetzt werden.
 
@@ -890,7 +890,7 @@ Erstellt: `dist/RobloxAutoclicker.app`
 
 ## Lizenz & Credits
 
-**Autor:** Entwickelt für Roblox und ähnliche Spiele
+**Autor:** Entwickelt für Autoinput und ähnliche Spiele
 **Python-Version:** 3.13+
 **Plattform:** macOS (Darwin 25.1.0)
 

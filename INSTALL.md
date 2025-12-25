@@ -1,4 +1,4 @@
-# Roblox Autoclicker - Installation
+# Autoinput - Installation
 
 ## Problem: Virtual Environment Berechtigungen
 
@@ -29,7 +29,7 @@ python3 -m pip install pynput pyobjc-framework-Quartz
 ### 3. Starte den Autoclicker
 
 ```bash
-cd /Users/whaeuser/Entwicklung/RobloxAutoclicker
+cd /Users/whaeuser/Entwicklung/AutoinputAutoclicker
 python3 debug_autoclicker.py
 ```
 
@@ -54,7 +54,7 @@ Falls du unbedingt ein venv verwenden möchtest:
 1. **Systemeinstellungen** → **Datenschutz & Sicherheit** → **Bedienungshilfen**
 2. Klicke auf **+** und füge hinzu:
    ```
-   /Users/whaeuser/Entwicklung/RobloxAutoclicker/venv/bin/python
+   /Users/whaeuser/Entwicklung/AutoinputAutoclicker/venv/bin/python
    ```
 
 ### 3. Autoclicker starten

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Startet die Roblox Autoclicker Toga GUI
+# Startet die Autoinput Toga GUI
 
 cd "$(dirname "$0")"
 
-echo "🎮 Starte Roblox Autoclicker (Toga)..."
+echo "🎮 Starte Autoinput (Toga)..."
 
 # Prüfe ob toga installiert ist
 if ! python3 -c "import toga" 2>/dev/null; then

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Roblox‑Autoclicker für macOS (Toggle-Version)
+Autoinput‑Autoclicker für macOS (Toggle-Version)
 
 Features:
   • Klicken startet beim ersten Tastendruck und stoppt beim zweiten (Toggle).
@@ -200,7 +200,7 @@ def main():
     try:
         import subprocess
         result = subprocess.run(
-            ['pgrep', '-f', 'roblox_autoclicker|debug_autoclicker'],
+            ['pgrep', '-f', 'autoinput|debug_autoclicker'],
             capture_output=True,
             text=True
         )
@@ -230,7 +230,7 @@ def main():
     click_mode = _config.get('click_mode', 'fast')
 
     print("=" * 50)
-    print("🎮 Roblox Autoclicker (TOGGLE-MODUS) gestartet")
+    print("🎮 Autoinput (TOGGLE-MODUS) gestartet")
     print("=" * 50)
     print(f"CPS: {_config['clicks_per_second']}")
     print(f"Hotkey: {_config.get('hotkey', 'shift')}")

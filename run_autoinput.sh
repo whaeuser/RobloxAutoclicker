@@ -18,7 +18,7 @@ python -m pip install --upgrade pip >/dev/null
 python -m pip install --quiet pyautogui pynput pyyaml
 
 # --------- Skript starten ----------
-SCRIPT="${BASE_DIR}/roblox_autoclicker.py"
+SCRIPT="${BASE_DIR}/autoinput.py"
 if [[ -f "${SCRIPT}" ]]; then
     echo "🚀 Starte Autoclicker … (STRG+ESC zum Beenden)"
     python "${SCRIPT}"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Roblox Autoclicker GUI
+Autoinput GUI
 Grafische Oberfläche zum Starten/Stoppen des Autoclickers mit Live-Log-Anzeige und Konfiguration
 """
 
@@ -16,10 +16,10 @@ from pathlib import Path
 from datetime import datetime
 import time
 
-class AutoclickerGUI:
+class AutoinputGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🎮 Roblox Autoclicker")
+        self.root.title("🎮 Autoinput")
         self.root.geometry("1100x800")
 
         self.process = None
@@ -45,7 +45,7 @@ class AutoclickerGUI:
         header.pack(fill=tk.X)
         header.pack_propagate(False)
 
-        title = tk.Label(header, text="🎮 Roblox Autoclicker",
+        title = tk.Label(header, text="🎮 Autoinput",
                         font=("SF Pro", 20, "bold"),
                         bg="#667eea", fg="white")
         title.pack(pady=15)
@@ -476,7 +476,7 @@ class AutoclickerGUI:
             activation_mode = config.get('activation_mode', 'hold')
 
             if activation_mode == 'toggle':
-                script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+                script_path = Path(__file__).parent / "autoinput_toggle.py"
                 mode_name = "Toggle"
             else:
                 script_path = Path(__file__).parent / "debug_autoclicker.py"
@@ -629,7 +629,7 @@ class AutoclickerGUI:
 
 def main():
     root = tk.Tk()
-    app = AutoclickerGUI(root)
+    app = AutoinputGUI(root)
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
 

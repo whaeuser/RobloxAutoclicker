@@ -1,4 +1,4 @@
-# 🎮 Roblox Autoclicker
+# 🎮 Autoinput
 
 Ein konfigurierbarer Autoclicker für macOS mit GUI, Web-Interface und Terminal-Unterstützung.
 
@@ -104,7 +104,7 @@ Dann im Browser: `http://localhost:8080`
 python3 debug_autoclicker.py
 
 # Toggle-Modus (ein/aus per Tastendruck)
-python3 roblox_autoclicker_toggle.py
+python3 autoinput_toggle.py
 ```
 
 ### Steuerung
@@ -133,7 +133,7 @@ verbose_mode: false          # Debug-Logs mit jedem Klick
 
 ### Empfohlene Einstellungen
 
-- **CPS**: 8-20 (Roblox-kompatibel)
+- **CPS**: 8-20 (Autoinput-kompatibel)
 - **Klick-Modus**: `fast`
 - **Aktivierung**: `hold` (sicherer, sofortiger Stop)
 
@@ -142,10 +142,10 @@ verbose_mode: false          # Debug-Logs mit jedem Klick
 ### Projekt-Struktur
 
 ```
-RobloxAutoclicker/
+AutoinputAutoclicker/
 ├── autoclicker_gui.py              # GUI Desktop-App (tkinter)
 ├── debug_autoclicker.py            # Hold-Modus Script
-├── roblox_autoclicker_toggle.py    # Toggle-Modus Script
+├── autoinput_toggle.py    # Toggle-Modus Script
 ├── web_controller.py               # Flask Web-Interface
 ├── config.yaml                     # Zentrale Konfiguration
 ├── start_gui.sh                    # GUI Launcher
@@ -160,7 +160,7 @@ RobloxAutoclicker/
 |--------|-------|----------------|
 | `autoclicker_gui.py` | Haupt-GUI | 3 Tabs, Live-Logs, Config-Editor, Custom Buttons |
 | `debug_autoclicker.py` | Hold-Modus | Auto-Cleanup alter Prozesse, Verbose-Logging |
-| `roblox_autoclicker_toggle.py` | Toggle-Modus | Ein/Aus-Schalter, gleiche Features wie Hold |
+| `autoinput_toggle.py` | Toggle-Modus | Ein/Aus-Schalter, gleiche Features wie Hold |
 | `web_controller.py` | Web-UI | Port 8080, Smart Logging, Auto-Restart |
 
 ### Technische Details
@@ -252,7 +252,7 @@ Nutze `./start_gui.sh` statt der .app
 
 ⚠️ **WICHTIG**: Dieser Autoclicker ist für persönliche/private Nutzung gedacht.
 
-- Roblox kann Autoclicker erkennen
+- Autoinput kann Autoclicker erkennen
 - Verwendung kann gegen ToS verstoßen
 - Kein Anti-Cheat-Bypass eingebaut
 - Nur für Testzwecke/Entwicklung verwenden
@@ -261,7 +261,7 @@ Nutze `./start_gui.sh` statt der .app
 
 ```bash
 # Repository klonen
-git clone https://github.com/whaeuser/RobloxAutoclicker.git
+git clone https://github.com/whaeuser/AutoinputAutoclicker.git
 
 # Status prüfen
 git status
@@ -299,7 +299,7 @@ git push
 |-------|-------|-----------------|
 | `autoclicker_gui.py` | Haupt-GUI | Für GUI-Features/Fixes |
 | `debug_autoclicker.py` | Hold-Modus Backend | Für Click-Logik (Hold) |
-| `roblox_autoclicker_toggle.py` | Toggle-Modus Backend | Für Click-Logik (Toggle) |
+| `autoinput_toggle.py` | Toggle-Modus Backend | Für Click-Logik (Toggle) |
 | `config.yaml` | Zentrale Config | Für neue Config-Optionen |
 | `README.md` | Dokumentation | Für Doku-Updates |
 
@@ -366,7 +366,7 @@ Bereits gefixt! Subprocess nutzt:
 
 ```bash
 # GUI Logs (wenn über .app gestartet)
-tail -f /tmp/roblox_autoclicker_gui.log
+tail -f /tmp/autoinput_gui.log
 
 # Laufende Prozesse prüfen
 ps aux | grep -i autoclicker
@@ -416,7 +416,7 @@ self.stop_btn_frame.button_enabled = False   # Deaktivieren
 
 **Prozess-Cleanup:**
 ```python
-# debug_autoclicker.py / roblox_autoclicker_toggle.py
+# debug_autoclicker.py / autoinput_toggle.py
 result = subprocess.run(['pgrep', '-f', 'autoclicker'], ...)
 for pid in pids:
     if pid != current_pid:
@@ -428,6 +428,6 @@ for pid in pids:
 **Version**: 1.5
 **Letztes Update**: 2025-12-25
 **Autor**: whaeuser
-**Repository**: https://github.com/whaeuser/RobloxAutoclicker
+**Repository**: https://github.com/whaeuser/AutoinputAutoclicker
 
 **Status**: ✅ Voll funktionsfähig

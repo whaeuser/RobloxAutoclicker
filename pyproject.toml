@@ -1,24 +1,24 @@
 [tool.briefcase]
-project_name = "Roblox Autoclicker"
-bundle = "com.roblox"
+project_name = "Autoinput"
+bundle = "com.autoinput"
 version = "1.5.0"
-url = "https://github.com/whaeuser/RobloxAutoclicker"
+url = "https://github.com/whaeuser/Autoinput"
 author = "whaeuser"
 author_email = "noreply@example.com"
 
-[tool.briefcase.app.robloxautoclicker]
-formal_name = "Roblox Autoclicker"
+[tool.briefcase.app.autoinput]
+formal_name = "Autoinput"
 description = "Konfigurierbarer Autoclicker für macOS"
-sources = ['robloxautoclicker']
+sources = ['autoinput']
 requires = [
     'toga>=0.4.0',
     'pyyaml',
 ]
 
-[tool.briefcase.app.robloxautoclicker.license]
+[tool.briefcase.app.autoinput.license]
 text = "MIT"
 
-[tool.briefcase.app.robloxautoclicker.macOS]
+[tool.briefcase.app.autoinput.macOS]
 requires = [
     'toga-cocoa>=0.4.0',
 ]

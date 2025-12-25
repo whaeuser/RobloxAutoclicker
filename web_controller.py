@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Web-Controller für Roblox Autoclicker
+Web-Controller für Autoinput
 Ermöglicht Start/Stop und Config-Verwaltung über Web-Interface
 """
 
@@ -38,7 +38,7 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox Autoclicker Controller</title>
+    <title>Autoinput Controller</title>
     <style>
         * {
             margin: 0;
@@ -315,7 +315,7 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <header>
-            <h1>🎮 Roblox Autoclicker</h1>
+            <h1>🎮 Autoinput</h1>
             <div class="subtitle">Web Controller</div>
         </header>
 
@@ -694,7 +694,7 @@ def save_config():
             activation_mode = config.get('activation_mode', 'hold')
 
             if activation_mode == 'toggle':
-                script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+                script_path = Path(__file__).parent / "autoinput_toggle.py"
                 script_name = "Toggle"
             else:
                 script_path = Path(__file__).parent / "debug_autoclicker.py"
@@ -744,7 +744,7 @@ def start_autoclicker():
 
         # Wähle das richtige Skript basierend auf dem Modus
         if activation_mode == 'toggle':
-            script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+            script_path = Path(__file__).parent / "autoinput_toggle.py"
             mode_name = "Toggle"
         else:
             script_path = Path(__file__).parent / "debug_autoclicker.py"
@@ -800,7 +800,7 @@ def get_status():
 
 if __name__ == '__main__':
     print("\n" + "=" * 70)
-    print("🌐 Roblox Autoclicker Web Controller")
+    print("🌐 Autoinput Web Controller")
     print("=" * 70)
     print("\n📍 Öffne im Browser: http://localhost:8080")
     print("🛑 Beenden mit: Strg+C\n")

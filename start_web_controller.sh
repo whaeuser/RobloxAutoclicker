@@ -1,7 +1,7 @@
 #!/bin/bash
 # Startet den Web Controller
 
-echo "🌐 Starte Roblox Autoclicker Web Controller..."
+echo "🌐 Starte Autoinput Web Controller..."
 echo ""
 
 # Prüfe ob Port 8080 bereits belegt ist und beende den Prozess

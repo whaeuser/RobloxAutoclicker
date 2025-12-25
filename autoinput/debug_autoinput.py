@@ -205,7 +205,7 @@ def main():
     try:
         import subprocess
         result = subprocess.run(
-            ['pgrep', '-f', 'roblox_autoclicker|debug_autoclicker'],
+            ['pgrep', '-f', 'autoinput|debug_autoclicker'],
             capture_output=True,
             text=True
         )

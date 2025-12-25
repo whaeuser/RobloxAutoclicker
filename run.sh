@@ -15,6 +15,6 @@ if ! python3 -c "import pynput" 2>/dev/null; then
 fi
 
 # Starte den Autoclicker
-echo "🚀 Starte Roblox Autoclicker..."
+echo "🚀 Starte Autoinput..."
 echo ""
 python3 debug_autoclicker.py

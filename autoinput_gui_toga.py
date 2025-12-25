@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Roblox Autoclicker - Toga GUI
+Autoinput - Toga GUI
 Native macOS GUI mit Toga (BeeWare)
 """
 
@@ -20,7 +20,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-class RobloxAutoclickerApp(toga.App):
+class AutoinputApp(toga.App):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,7 +33,7 @@ class RobloxAutoclickerApp(toga.App):
         # Variablen
         self.process = None
         self.config_path = Path(__file__).parent / "config.yaml"
-        self.log_file_path = Path("/tmp/roblox_autoclicker_toga.log")
+        self.log_file_path = Path("/tmp/autoinput_toga.log")
         self.log_file_handle = None
 
         # Klick-Test Variablen
@@ -59,7 +59,7 @@ class RobloxAutoclickerApp(toga.App):
         ))
 
         title = toga.Label(
-            "🎮 Roblox Autoclicker",
+            "🎮 Autoinput",
             style=Pack(
                 margin=(10, 10),
                 font_size=20,
@@ -368,7 +368,7 @@ class RobloxAutoclickerApp(toga.App):
             activation_mode = config.get('activation_mode', 'hold')
 
             if activation_mode == 'toggle':
-                script_path = Path(__file__).parent / "roblox_autoclicker_toggle.py"
+                script_path = Path(__file__).parent / "autoinput_toggle.py"
                 mode_name = "Toggle"
             else:
                 script_path = Path(__file__).parent / "debug_autoclicker.py"
@@ -528,9 +528,9 @@ class RobloxAutoclickerApp(toga.App):
 
 
 def main():
-    return RobloxAutoclickerApp(
-        "Roblox Autoclicker",
-        "com.roblox.autoclicker"
+    return AutoinputApp(
+        "Autoinput",
+        "com.autoinput"
     )
 
 
