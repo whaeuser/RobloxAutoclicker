@@ -1,203 +1,433 @@
-# Roblox Autoclicker
+# 🎮 Roblox Autoclicker
 
-Ein konfigurierbarer Autoclicker für macOS mit Hotkey-Steuerung und Debug-Modus.
+Ein konfigurierbarer Autoclicker für macOS mit GUI, Web-Interface und Terminal-Unterstützung.
 
-## Features
+## 📋 Inhaltsverzeichnis
 
-- **Konfigurierbare CPS** - Stelle Klicks pro Sekunde (1-1000) ein
-- **Hotkey-Steuerung** - Aktiviere/Deaktiviere mit einer Taste (Standard: Shift)
-- **Flexible Klick-Modi** - Fast, Standard, Separate Events, Rechtsklick
-- **Feste oder dynamische Position** - Klicke an Mausposition oder fester Koordinate
-- **Debug-Modus** - Ausführliches Logging für Fehlersuche
-- **YAML-Konfiguration** - Einfache Anpassung ohne Code-Änderung
+- [Features](#features)
+- [Installation](#installation)
+- [Verwendung](#verwendung)
+- [Konfiguration](#konfiguration)
+- [Architektur](#architektur)
+- [Aktueller Status](#aktueller-status)
+- [Bekannte Issues](#bekannte-issues)
+- [Nächste Session](#nächste-session-wo-weitermachen)
 
-## Schnellstart
+## ✨ Features
 
-### Option 1: Web Controller (Empfohlen!)
+### Drei Bedienungsmöglichkeiten
+
+1. **🖥️ GUI Desktop-App** (Empfohlen)
+   - Grafische Oberfläche mit Tabs
+   - Live-Log-Anzeige
+   - Konfigurationseditor
+   - Klick-Test-Bereich mit CPS-Messung
+   - Farbige Buttons (Grün/Rot/Blau)
+
+2. **🌐 Web-Interface**
+   - Browser-basierte Steuerung auf Port 8080
+   - Remote-Kontrolle möglich
+   - Automatisches Neu-Laden bei Config-Änderungen
+
+3. **⌨️ Terminal**
+   - Direkter Aufruf der Python-Scripts
+   - Für Scripting und Automation
+
+### Klick-Modi
+
+- **Fast Mode** (Empfohlen): Optimiert für hohe CPS
+- **Standard Mode**: Normale Click-Events
+- **Separate Events**: Separate Down/Up Events
+- **Rechtsklick**: Statt Linksklick
+
+### Aktivierungsmodi
+
+- **Hold-Modus**: Klickt nur während Hotkey gedrückt ist
+- **Toggle-Modus**: Ein/Aus-Schalter per Hotkey
+
+### Debug-Features
+
+- **Verbose Mode**: Zeigt jeden einzelnen Klick mit:
+  - Millisekunden-Timestamp
+  - Position (X, Y)
+  - Gedrückte Taste
+  - Click-Counter
+- **Live Logs**: Echtzeit-Ausgabe in GUI und Terminal
+
+## 🔧 Installation
+
+### Voraussetzungen
 
 ```bash
-# Dependencies installieren
-pip3 install flask pynput pyautogui pyyaml
+# Python 3.x mit tkinter
+brew install python-tk@3.11  # oder deine Python-Version
 
-# Web Controller starten
+# Python-Abhängigkeiten
+pip3 install pyautogui pynput pyyaml flask
+```
+
+### macOS Accessibility Permissions
+
+**Wichtig**: Python/Terminal benötigt Accessibility-Rechte!
+
+1. Öffne **System Settings** → **Privacy & Security** → **Accessibility**
+2. Klicke auf **+** und füge hinzu:
+   - `/usr/bin/python3`
+   - Terminal.app (falls du vom Terminal startest)
+3. Aktiviere die Checkboxen
+
+## 🚀 Verwendung
+
+### GUI starten (Empfohlen)
+
+```bash
+./start_gui.sh
+```
+
+Die GUI bietet drei Tabs:
+- **⚡ Steuerung & Logs**: Start/Stop, Live-Logs
+- **⚙️  Konfiguration**: Alle Einstellungen bearbeiten
+- **🎯 Klick-Test**: CPS testen und messen
+
+### Web-Interface starten
+
+```bash
 ./start_web_controller.sh
-
-# Browser öffnen
-open http://localhost:8080
 ```
 
-**Vorteile:**
-- Config im Browser anpassen
-- Start/Stop per Klick
-- Integrierter Klick-Test
-- Keine Terminal-Befehle nötig
+Dann im Browser: `http://localhost:8080`
 
-Siehe [WEB_CONTROLLER.md](WEB_CONTROLLER.md) für Details.
-
----
-
-### Option 2: Kommandozeile (CLI)
+### Terminal-Nutzung
 
 ```bash
-# Dependencies installieren
-pip3 install pynput pyautogui pyyaml
-
-# Oder mit Setup-Skript
-./setup.sh
-```
-
-### 2. Berechtigungen erteilen
-
-**Wichtig:** Python benötigt Accessibility-Berechtigung!
-
-1. Öffne **Systemeinstellungen** → **Datenschutz & Sicherheit** → **Bedienungshilfen**
-2. Klicke auf das **Schloss** (Passwort eingeben)
-3. Klicke auf **+** und füge hinzu:
-   - Für System-Python: `/usr/local/bin/python3` (oder der Pfad von `which python3`)
-   - Für venv: `/Users/whaeuser/Entwicklung/RobloxAutoclicker/venv/bin/python`
-   - Oder füge **Terminal.app** / **iTerm.app** selbst hinzu
-
-### 3. Starten
-
-```bash
-# Mit System-Python (empfohlen)
+# Hold-Modus (klickt während Taste gedrückt)
 python3 debug_autoclicker.py
 
-# Oder mit run-Skript
-./run.sh
-
-# Mit venv
-source venv/bin/activate
-python debug_autoclicker.py
+# Toggle-Modus (ein/aus per Tastendruck)
+python3 roblox_autoclicker_toggle.py
 ```
 
-## Verwendung
+### Steuerung
 
-### Grundlegende Steuerung
+- **Hotkey drücken**: Autoclicker aktivieren (Standard: Shift)
+- **ESC**: Autoclicker beenden
+- **Strg+C**: Autoclicker beenden
 
-1. **Starte das Programm** - Führe `python3 debug_autoclicker.py` aus
-2. **Aktiviere Clicking** - Drücke und halte die **Shift-Taste** (oder deine konfigurierte Hotkey)
-3. **Deaktiviere Clicking** - Lasse die **Shift-Taste** los
-4. **Beende das Programm** - Drücke **ESC**
+## ⚙️ Konfiguration
 
-### Konfiguration anpassen
-
-Bearbeite die `config.yaml` Datei:
+Alle Einstellungen in `config.yaml`:
 
 ```yaml
-# Klicks pro Sekunde (1-1000)
-clicks_per_second: 12
-
-# Aktivierungs-Hotkey
-hotkey: shift
-
-# Klick-Position (null = aktuelle Mausposition)
-target_position: null
-
-# Oder feste Position
-# target_position: [500, 300]
-
-# Klick-Modus (fast, standard, separate, right)
-click_mode: fast
-
-# Logging aktivieren
-enable_logging: true
+clicks_per_second: 12        # CPS (1-1000)
+hotkey: shift                # Aktivierungs-Taste
+activation_mode: hold        # 'hold' oder 'toggle'
+click_mode: fast             # 'fast', 'standard', 'separate', 'right'
+target_position: null        # [x, y] oder null für Maus-Position
+enable_logging: true         # Logging aktivieren
+verbose_mode: false          # Debug-Logs mit jedem Klick
 ```
 
-Siehe [CONFIG.md](CONFIG.md) für alle Optionen.
+### Verfügbare Hotkeys
 
-## Klick-Modi
+`shift`, `shift_r`, `ctrl`, `ctrl_r`, `alt`, `alt_r`, `space`, `tab`, `f6`, `f7`, `f8`, `f9`
 
-| Modus | Beschreibung | Verwendung |
-|-------|--------------|------------|
-| `fast` | PyAutoGUI Click ohne Verzögerung | Standard, empfohlen |
-| `standard` | PyAutoGUI Click mit kleiner Pause | Kompatibilität |
-| `separate` | Separate mouseDown/mouseUp Events | Maximale Geschwindigkeit |
-| `right` | Rechtsklick statt Linksklick | Spezielle Anwendungsfälle |
+### Empfohlene Einstellungen
 
-## Verfügbare Hotkeys
+- **CPS**: 8-20 (Roblox-kompatibel)
+- **Klick-Modus**: `fast`
+- **Aktivierung**: `hold` (sicherer, sofortiger Stop)
 
-```
-shift, shift_r    - Shift-Tasten (links/rechts)
-ctrl, ctrl_r      - Strg-Tasten (links/rechts)
-alt, alt_r        - Alt-Tasten (links/rechts)
-space             - Leertaste
-tab               - Tab-Taste
-caps_lock         - Caps Lock
-f1 - f12          - Funktionstasten
-```
+## 🏗️ Architektur
 
-## Projektstruktur
+### Projekt-Struktur
 
 ```
 RobloxAutoclicker/
-├── web_controller.py           # 🌐 Web-Interface (NEU!)
-├── start_web_controller.sh     # Start-Skript für Web Controller
-├── debug_autoclicker.py        # Hauptprogramm mit Debug-Logging
-├── config.yaml                 # Konfigurationsdatei
-├── setup.sh                    # Setup-Skript (erstellt venv)
-├── run.sh                      # Start-Skript (System-Python)
-├── click_test.html             # Einfache Klick-Test-Seite
-├── README.md                   # Diese Datei
-├── QUICKSTART.md               # ⚡ Kurzanleitung
-├── WEB_CONTROLLER.md           # 🌐 Web Controller Dokumentation
-├── INSTALL.md                  # Detaillierte Installationsanleitung
-├── CONFIG.md                   # Konfigurationsdokumentation
-├── CODE_DOCUMENTATION.md       # Code-Dokumentation
-└── TROUBLESHOOTING.md          # Problemlösung
+├── autoclicker_gui.py              # GUI Desktop-App (tkinter)
+├── debug_autoclicker.py            # Hold-Modus Script
+├── roblox_autoclicker_toggle.py    # Toggle-Modus Script
+├── web_controller.py               # Flask Web-Interface
+├── config.yaml                     # Zentrale Konfiguration
+├── start_gui.sh                    # GUI Launcher
+├── start_web_controller.sh         # Web Launcher
+├── create_app.sh                   # macOS .app Builder
+└── README.md                       # Diese Datei
 ```
 
-## Troubleshooting
+### Script-Funktionen
 
-### "This process is not trusted!"
+| Script | Zweck | Besonderheiten |
+|--------|-------|----------------|
+| `autoclicker_gui.py` | Haupt-GUI | 3 Tabs, Live-Logs, Config-Editor, Custom Buttons |
+| `debug_autoclicker.py` | Hold-Modus | Auto-Cleanup alter Prozesse, Verbose-Logging |
+| `roblox_autoclicker_toggle.py` | Toggle-Modus | Ein/Aus-Schalter, gleiche Features wie Hold |
+| `web_controller.py` | Web-UI | Port 8080, Smart Logging, Auto-Restart |
 
-Python hat keine Accessibility-Berechtigung. Siehe [INSTALL.md](INSTALL.md) Schritt 2.
+### Technische Details
 
-### Keine Klicks
+**GUI (autoclicker_gui.py)**
+- **Framework**: tkinter
+- **Tabs**: ttk.Notebook mit 3 Tabs
+- **Custom Buttons**: Frame+Label statt tk.Button (macOS Theme-Workaround)
+- **Button States**: Dynamisches `button_enabled` Attribut
+- **Subprocess**: Unbuffered Output (`python3 -u`, `PYTHONUNBUFFERED=1`, `bufsize=0`)
+- **Threading**: Daemon-Thread für Output-Lesen
+- **Process Management**: SIGTERM → SIGKILL → direct kill() Fallbacks
 
-1. Prüfe ob Debug-Modus Klick-Meldungen zeigt
-2. Stelle sicher dass die richtige Taste gedrückt wird
-3. Prüfe `config.yaml` auf Syntaxfehler
+**Autoclicker Scripts**
+- **Auto-Cleanup**: Killt alte Prozesse beim Start (`pgrep -f`, `kill -9`)
+- **Exit Handling**: ESC auf press (nicht release), Ctrl+C try/except
+- **Verbose Logging**: Millisekunden-Timestamps, Position, Key
+- **Config Hot-Reload**: Lädt config.yaml bei jedem Start
 
-### Dependencies fehlen
+**Web Controller**
+- **Framework**: Flask
+- **Smart Logging**: Keine `/api/status` Spam-Logs
+- **Auto-Restart**: Neustart bei Config-Änderung
+- **Port Management**: Auto-Kill von Prozessen auf Port 8080
+
+## ✅ Aktueller Status
+
+### Was funktioniert
+
+✅ GUI mit allen Features (Start/Stop/Clear Logs)
+✅ Farbige Buttons (Grün für Start, Rot für Stop, Blau für Clear)
+✅ Button States (disabled/enabled) funktionieren korrekt
+✅ Hold- und Toggle-Modi
+✅ Verbose-Logging mit Millisekunden-Timestamps
+✅ Live-Log-Anzeige in GUI (Echtzeit)
+✅ Klick-Test-Bereich mit CPS-Messung
+✅ Config-Editor in GUI
+✅ Web-Interface
+✅ Auto-Cleanup von Duplikat-Prozessen
+✅ ESC und Ctrl+C zum Beenden
+✅ Prozess-Terminierung mit Fallbacks
+
+### Letzte Fixes (Stand: 2025-12-25)
+
+**Button Color Fix (Commit: 08be3f4)**
+- Problem: macOS Tkinter überschreibt tk.Button Farben
+- Lösung: Custom Buttons mit Frame+Label statt tk.Button
+- Ergebnis: Buttons zeigen korrekte Farben (Grün/Rot/Blau)
+
+**Button Functionality Fix (Commit: 27fed45)**
+- Problem: Stop-Button war nicht klickbar (state in Closure gefangen)
+- Lösung: `button_enabled` als Frame-Attribut statt Closure-Variable
+- Ergebnis: Alle Buttons funktionieren korrekt
+
+**Process Termination Fix (Commit: 27fed45)**
+- Problem: Stop-Button konnte Prozesse nicht zuverlässig beenden
+- Lösung: Mehrere Fallbacks (SIGTERM → SIGKILL → direct kill)
+- Ergebnis: Prozesse werden zuverlässig gestoppt
+
+**Click Test Timer Auto-Pause (Commit: be9b579)**
+- Problem: Dauer-Zähler lief nach dem ersten Klick ewig weiter
+- Lösung: Auto-Pause nach 3 Sekunden Inaktivität
+- Ergebnis: Timer friert automatisch ein wenn nicht mehr geklickt wird
+
+## 🐛 Bekannte Issues
+
+### macOS .app Bundle
+
+**Status**: Funktioniert NICHT zuverlässig
+
+**Problem**:
+- System-Python hat keine Module (yaml fehlt)
+- Launcher kann Module nicht automatisch installieren
+
+**Workaround**:
+Nutze `./start_gui.sh` statt der .app
+
+**Datei**: `create_app.sh` erstellt die .app, aber nicht empfohlen
+
+### Mögliche zukünftige Verbesserungen
+
+- [ ] Position-Picker in GUI (Click to set position)
+- [ ] Preset-Profile (speichere/lade verschiedene Configs)
+- [ ] Statistiken (Total clicks, Uptime, Average CPS)
+- [ ] Hotkey-Recorder (beliebige Tasten aufnehmen)
+- [ ] .app Bundle mit PyInstaller (eigenständige Binary)
+
+## 🔐 Sicherheit
+
+⚠️ **WICHTIG**: Dieser Autoclicker ist für persönliche/private Nutzung gedacht.
+
+- Roblox kann Autoclicker erkennen
+- Verwendung kann gegen ToS verstoßen
+- Kein Anti-Cheat-Bypass eingebaut
+- Nur für Testzwecke/Entwicklung verwenden
+
+## 📝 Git Repository
 
 ```bash
-pip3 install pynput pyautogui pyyaml
+# Repository klonen
+git clone https://github.com/whaeuser/RobloxAutoclicker.git
+
+# Status prüfen
+git status
+
+# Änderungen committen
+git add .
+git commit -m "Beschreibung"
+git push
 ```
 
-Siehe [TROUBLESHOOTING.md](TROUBLESHOOTING.md) für mehr Hilfe.
+## 🎯 Nächste Session: Wo weitermachen?
 
-## Sicherheitshinweise
+### ✅ Zuletzt erfolgreich abgeschlossen
 
-- **Nur für autorisierten Gebrauch** - Verwende dieses Tool nur in Spielen/Anwendungen, wo Autoclicker erlaubt sind
-- **Keine Garantie** - Einige Spiele haben Anti-Cheat-Systeme
-- **Eigenes Risiko** - Der Autor übernimmt keine Haftung
+1. **GUI komplett funktionsfähig**
+   - Start/Stop/Clear Buttons funktionieren
+   - Farbige Buttons (Grün/Rot/Blau) werden korrekt angezeigt
+   - Button States (enabled/disabled) funktionieren
+   - Live-Logs werden in Echtzeit angezeigt
 
-## Technische Details
+2. **Prozess-Management robust**
+   - Auto-Cleanup von alten Prozessen beim Start
+   - Zuverlässiges Stoppen mit Fallback-Mechanismen
+   - Keine Duplikat-Prozesse mehr
 
-- **Sprache:** Python 3.13+
-- **Plattform:** macOS (Darwin)
-- **Dependencies:** pynput, pyautogui, pyyaml
-- **Threading:** Separater Worker-Thread für Klick-Events
-- **Event-Handling:** pynput keyboard listener
+3. **Alle Features implementiert**
+   - Hold- und Toggle-Modi
+   - Verbose-Logging
+   - Config-Editor
+   - Klick-Test
 
-## Lizenz
+### 📂 Wichtige Dateien für die nächste Session
 
-Dieses Projekt ist für Bildungs- und Testzwecke gedacht. Verwende es verantwortungsvoll.
+| Datei | Zweck | Wann bearbeiten |
+|-------|-------|-----------------|
+| `autoclicker_gui.py` | Haupt-GUI | Für GUI-Features/Fixes |
+| `debug_autoclicker.py` | Hold-Modus Backend | Für Click-Logik (Hold) |
+| `roblox_autoclicker_toggle.py` | Toggle-Modus Backend | Für Click-Logik (Toggle) |
+| `config.yaml` | Zentrale Config | Für neue Config-Optionen |
+| `README.md` | Dokumentation | Für Doku-Updates |
 
-## Support
+### 🔧 Wenn Probleme auftreten
 
-Bei Problemen:
-1. Lese [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-2. Prüfe ob alle Dependencies installiert sind
-3. Stelle sicher dass Berechtigungen korrekt gesetzt sind
-4. Teste mit `python3 debug_autoclicker.py` für detailliertes Logging
+**GUI startet nicht:**
+```bash
+# Prüfe tkinter
+python3 -c "import tkinter"
 
-## Changelog
+# Install wenn fehlt
+brew install python-tk@3.11
+```
 
-### Version 1.0 (Debug)
-- Initial Release mit Debug-Logging
-- YAML-basierte Konfiguration
-- Mehrere Klick-Modi
-- Hotkey-Steuerung
-- macOS Accessibility-Integration
+**Keine Klicks / "This process is not trusted":**
+```
+System Settings → Privacy & Security → Accessibility
+→ Füge Python/Terminal hinzu
+```
+
+**Port 8080 belegt (Web-Interface):**
+```bash
+# Automatisch: Script killt alte Prozesse
+./start_web_controller.sh
+
+# Manuell
+lsof -ti:8080 | xargs kill -9
+```
+
+**Mehrere Autoclicker laufen gleichzeitig:**
+```bash
+# Sollte nicht passieren (Auto-Cleanup)
+# Manuell stoppen:
+pkill -f autoclicker
+ps aux | grep -i autoclicker
+```
+
+**Verbose Logs erscheinen nicht in GUI:**
+```
+Bereits gefixt! Subprocess nutzt:
+- python3 -u flag
+- PYTHONUNBUFFERED=1
+- bufsize=0
+```
+
+### 🚀 Mögliche nächste Features
+
+**Einfach:**
+1. Position-Picker Button in GUI (klicke um Position zu setzen)
+2. Preset-Profile speichern/laden
+3. Statistiken-Tab (Total Clicks, Uptime, Average CPS)
+
+**Mittel:**
+4. Hotkey-Recorder für beliebige Tasten
+5. Mehrere Klick-Positionen (Rotation)
+6. Click-Pattern-Editor (z.B. Klick-Pause-Klick)
+
+**Komplex:**
+7. PyInstaller .app Bundle (eigenständige Binary)
+8. Auto-Update-Funktion
+9. Cloud-Config-Sync
+
+### 📊 Debugging & Logs
+
+```bash
+# GUI Logs (wenn über .app gestartet)
+tail -f /tmp/roblox_autoclicker_gui.log
+
+# Laufende Prozesse prüfen
+ps aux | grep -i autoclicker
+
+# Ports prüfen
+lsof -i :8080
+
+# Git Status
+git status
+git log --oneline -5
+```
+
+### 💡 Tipps für die nächste Session
+
+1. **Immer zuerst testen**: `./start_gui.sh` ausführen
+2. **Config prüfen**: `cat config.yaml` für aktuelle Einstellungen
+3. **Git Status**: `git status` für ungespeicherte Änderungen
+4. **README lesen**: Diese Datei ist aktuell! (Stand: 2025-12-25)
+
+### 🎓 Code-Architektur verstehen
+
+**Custom Button System:**
+```python
+# autoclicker_gui.py:76-114
+def create_custom_button(...):
+    # Frame als Button-Container
+    frame.button_enabled = True  # Dynamischer State
+    frame.normal_color = bg_color
+    frame.hover_color = hover_color
+
+    # Click-Handler prüft frame.button_enabled
+    def on_click(e):
+        if frame.button_enabled:
+            command()
+```
+
+**Button State Management:**
+```python
+# autoclicker_gui.py:477-485 (start)
+self.start_btn_frame.button_enabled = False  # Deaktivieren
+self.stop_btn_frame.button_enabled = True    # Aktivieren
+
+# autoclicker_gui.py:509-517 (stop)
+self.start_btn_frame.button_enabled = True   # Reaktivieren
+self.stop_btn_frame.button_enabled = False   # Deaktivieren
+```
+
+**Prozess-Cleanup:**
+```python
+# debug_autoclicker.py / roblox_autoclicker_toggle.py
+result = subprocess.run(['pgrep', '-f', 'autoclicker'], ...)
+for pid in pids:
+    if pid != current_pid:
+        os.system(f"kill -9 {pid}")
+```
+
+---
+
+**Version**: 1.5
+**Letztes Update**: 2025-12-25
+**Autor**: whaeuser
+**Repository**: https://github.com/whaeuser/RobloxAutoclicker
+
+**Status**: ✅ Voll funktionsfähig
