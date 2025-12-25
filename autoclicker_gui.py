@@ -20,7 +20,7 @@ class AutoclickerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("🎮 Roblox Autoclicker")
-        self.root.geometry("1100x750")
+        self.root.geometry("1100x850")  # Höhe erhöht für Reset-Button Sichtbarkeit
 
         self.process = None
         self.config_path = Path(__file__).parent / "config.yaml"
@@ -318,21 +318,21 @@ class AutoclickerGUI:
             stat_box.grid(row=row, column=col, padx=10, pady=10)
 
             tk.Label(stat_box, text=label, font=("SF Pro", 10),
-                    bg="#e2e8f0", fg="#64748b").pack()
+                    bg="#e2e8f0", fg="black").pack()
             label_widget = tk.Label(stat_box, text="0", font=("SF Pro", 20, "bold"),
-                                   bg="#e2e8f0")
+                                   bg="#e2e8f0", fg="black")
             label_widget.pack()
             setattr(self, f"{attr}_label", label_widget)
 
-        # Reset Button
-        reset_btn = tk.Button(test_frame, text="🔄 Test zurücksetzen",
-                             command=self.reset_click_test,
-                             font=("SF Pro", 11),
-                             bg="#94a3b8", fg="white",
-                             padx=20, pady=10,
-                             relief=tk.FLAT,
-                             cursor="hand2")
-        reset_btn.pack(pady=10)
+        # Reset Button direkt unter Stats
+        button_container = tk.Frame(test_frame)
+        button_container.pack(pady=15)
+
+        reset_btn_frame, reset_btn_label = self.create_custom_button(
+            button_container, "🔄 Test zurücksetzen", self.reset_click_test,
+            "#f97316", "#ea580c", tk.NORMAL  # Orange
+        )
+        reset_btn_frame.pack()
 
     def load_config(self):
         """Lädt die Konfiguration aus der YAML-Datei"""
