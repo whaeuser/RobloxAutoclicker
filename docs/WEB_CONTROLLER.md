@@ -19,7 +19,7 @@ pip3 install flask pynput pyautogui pyyaml
 ### 2. Web Controller starten
 
 ```bash
-./start_web_controller.sh
+./scripts/start_web_controller.sh
 ```
 
 Oder manuell:

@@ -10,4 +10,4 @@ if [ -d "venv" ]; then
     source venv/bin/activate
 fi
 
-python3 autoinput_toggle.py
+python3 ../src/autoinput_toggle.py

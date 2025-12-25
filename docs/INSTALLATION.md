@@ -6,10 +6,10 @@
 
 ```bash
 # Toga GUI starten
-./start_autoinput_gui_toga.sh
+./scripts/start_autoinput_gui_toga.sh
 
 # Oder direkt mit Python
-python3 autoinput_gui_toga.py
+python3 src/autoinput_gui_toga.py
 ```
 
 ### Option 2: Standalone macOS App verwenden
@@ -177,14 +177,34 @@ briefcase package --adhoc-sign
 
 ```
 Autoinput/
-├── autoinput_gui_toga.py        # Hauptdatei (Standalone)
-├── autoinput/                   # Package für Briefcase
+├── src/                         # Python-Quellcode
+│   ├── autoinput.py             # Haupt-Autoclicker
+│   ├── autoinput_toggle.py      # Toggle-Modus
+│   ├── debug_autoinput.py       # Debug/Hold-Modus
+│   ├── autoinput_gui_toga.py    # Toga GUI (aktiv)
+│   ├── autoinput_gui.py         # Tkinter GUI (legacy)
+│   └── web_controller.py        # Web-Interface
+├── scripts/                     # Shell-Skripte
+│   ├── start_autoinput_gui_toga.sh
+│   ├── start_autoinput_gui.sh
+│   ├── start_web_controller.sh
+│   ├── run_autoinput.sh
+│   ├── run_toggle.sh
+│   └── setup.sh
+├── docs/                        # Dokumentation
+│   ├── INSTALLATION.md
+│   ├── QUICKSTART.md
+│   ├── TROUBLESHOOTING.md
+│   └── ...
+├── autoinput/                   # Briefcase Package
 │   ├── __init__.py
-│   ├── __main__.py              # Kopie von autoinput_gui_toga.py
+│   ├── __main__.py              # Toga GUI für App
 │   ├── debug_autoinput.py       # Hold-Modus Script
 │   ├── autoinput_toggle.py      # Toggle-Modus Script
 │   └── config.yaml              # Konfiguration
+├── config.yaml                  # Projekt-Konfiguration
 ├── pyproject.toml               # Briefcase-Konfiguration
+├── README.md                    # Hauptdokumentation
 ├── build/                       # Build-Artifacts (nicht versioniert)
 └── dist/                        # DMG-Installer (nicht versioniert)
 ```

@@ -81,7 +81,7 @@ pip3 install pyautogui pynput pyyaml flask
 ### GUI starten (Empfohlen)
 
 ```bash
-./start_gui.sh
+./scripts/start_autoinput_gui.sh
 ```
 
 Die GUI bietet drei Tabs:
@@ -92,7 +92,7 @@ Die GUI bietet drei Tabs:
 ### Web-Interface starten
 
 ```bash
-./start_web_controller.sh
+./scripts/start_web_controller.sh
 ```
 
 Dann im Browser: `http://localhost:8080`
@@ -104,7 +104,7 @@ Dann im Browser: `http://localhost:8080`
 python3 debug_autoclicker.py
 
 # Toggle-Modus (ein/aus per Tastendruck)
-python3 autoinput_toggle.py
+python3 src/autoinput_toggle.py
 ```
 
 ### Steuerung
@@ -236,7 +236,7 @@ AutoinputAutoclicker/
 - Launcher kann Module nicht automatisch installieren
 
 **Workaround**:
-Nutze `./start_gui.sh` statt der .app
+Nutze `./scripts/start_autoinput_gui.sh` statt der .app
 
 **Datei**: `create_app.sh` erstellt die .app, aber nicht empfohlen
 
@@ -323,7 +323,7 @@ System Settings → Privacy & Security → Accessibility
 **Port 8080 belegt (Web-Interface):**
 ```bash
 # Automatisch: Script killt alte Prozesse
-./start_web_controller.sh
+./scripts/start_web_controller.sh
 
 # Manuell
 lsof -ti:8080 | xargs kill -9
@@ -381,7 +381,7 @@ git log --oneline -5
 
 ### 💡 Tipps für die nächste Session
 
-1. **Immer zuerst testen**: `./start_gui.sh` ausführen
+1. **Immer zuerst testen**: `./scripts/start_autoinput_gui.sh` ausführen
 2. **Config prüfen**: `cat config.yaml` für aktuelle Einstellungen
 3. **Git Status**: `git status` für ungespeicherte Änderungen
 4. **README lesen**: Diese Datei ist aktuell! (Stand: 2025-12-25)

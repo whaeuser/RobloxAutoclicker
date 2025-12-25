@@ -34,4 +34,4 @@ if ! python3 -c "import pynput, pyautogui, yaml" 2>/dev/null; then
 fi
 
 # Starte Web Controller
-python3 web_controller.py
+python3 ../src/web_controller.py
