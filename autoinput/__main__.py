@@ -443,9 +443,17 @@ class AutoinputApp(toga.App):
 
     def start_autoclicker(self, widget):
         """Startet den Autoclicker"""
+        # Prevent double-clicks
+        if not self.start_btn.enabled:
+            self.log("⚠️  Start bereits in Bearbeitung...")
+            return
+
         if self.process and self.process.poll() is None:
             self.log("⚠️  Autoclicker läuft bereits!")
             return
+
+        # Sofort Button deaktivieren um Doppel-Klicks zu verhindern
+        self.start_btn.enabled = False
 
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -487,8 +495,7 @@ class AutoinputApp(toga.App):
                 **popen_kwargs
             )
 
-            # Buttons aktualisieren
-            self.start_btn.enabled = False
+            # Buttons aktualisieren (start_btn bereits deaktiviert)
             self.stop_btn.enabled = True
             self.status_label.text = "🟢 Läuft"
 
@@ -497,6 +504,10 @@ class AutoinputApp(toga.App):
 
         except Exception as e:
             self.log(f"❌ Fehler beim Starten: {e}")
+            # Bei Fehler: Button wieder aktivieren
+            self.start_btn.enabled = True
+            self.stop_btn.enabled = False
+            self.status_label.text = "⚫ Gestoppt"
 
     def stop_autoclicker(self, widget):
         """Stoppt den Autoclicker"""
