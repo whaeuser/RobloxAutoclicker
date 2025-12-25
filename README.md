@@ -17,12 +17,14 @@ Ein konfigurierbarer Autoclicker für macOS mit GUI, Web-Interface und Terminal-
 
 ### Drei Bedienungsmöglichkeiten
 
-1. **🖥️ GUI Desktop-App** (Empfohlen)
-   - Grafische Oberfläche mit Tabs
-   - Live-Log-Anzeige
+1. **🖥️ GUI Desktop-App - Toga** (Empfohlen, Production Ready)
+   - Native macOS GUI mit Toga (BeeWare)
+   - Grafische Oberfläche mit 3 Tabs
+   - Live-Log-Anzeige mit manuellem Refresh
    - Konfigurationseditor
    - Klick-Test-Bereich mit CPS-Messung
-   - Farbige Buttons (Grün/Rot/Blau)
+   - Standalone .app Bundle verfügbar
+   - *Legacy: Tkinter GUI verfügbar für Entwicklung*
 
 2. **🌐 Web-Interface**
    - Browser-basierte Steuerung auf Port 8080
@@ -80,14 +82,20 @@ pip3 install pyautogui pynput pyyaml flask
 
 ### GUI starten (Empfohlen)
 
+**Toga GUI (Production):**
 ```bash
 ./scripts/start_autoinput_gui.sh
 ```
 
 Die GUI bietet drei Tabs:
-- **⚡ Steuerung & Logs**: Start/Stop, Live-Logs
+- **⚡ Steuerung & Logs**: Start/Stop, Live-Logs (manueller Refresh)
 - **⚙️  Konfiguration**: Alle Einstellungen bearbeiten
 - **🎯 Klick-Test**: CPS testen und messen
+
+**Tkinter GUI (Legacy):**
+```bash
+./scripts/start_autoinput_gui_tkinter.sh
+```
 
 ### Web-Interface starten
 

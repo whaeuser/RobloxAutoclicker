@@ -1,18 +1,18 @@
 #!/bin/bash
 # Startet die Autoinput GUI
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 echo "🎮 Starte Autoinput GUI..."
 
-# Prüfe ob tkinter verfügbar ist
-if ! python3 -c "import tkinter" 2>/dev/null; then
-    echo "❌ tkinter ist nicht installiert!"
+# Prüfe ob toga installiert ist
+if ! python3 -c "import toga" 2>/dev/null; then
+    echo "❌ Toga ist nicht installiert!"
     echo ""
     echo "Installiere mit:"
-    echo "  brew install python-tk@3.11  # oder deine Python-Version"
+    echo "  pip3 install toga briefcase"
     exit 1
 fi
 
-# Starte GUI
-python3 autoclicker_gui.py
+# Starte Toga GUI (filtere .py Opening Warnung)
+python3 src/autoinput_gui_toga.py 2>&1 | grep -v "Don't know how to open documents with extension"

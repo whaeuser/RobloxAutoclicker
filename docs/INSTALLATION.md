@@ -4,12 +4,18 @@
 
 ### Option 1: Python-Skript direkt ausführen
 
+**Toga GUI (Production, Empfohlen):**
 ```bash
-# Toga GUI starten
-./scripts/start_autoinput_gui_toga.sh
+# Mit Startskript
+./scripts/start_autoinput_gui.sh
 
 # Oder direkt mit Python
 python3 src/autoinput_gui_toga.py
+```
+
+**Tkinter GUI (Legacy):**
+```bash
+./scripts/start_autoinput_gui_tkinter.sh
 ```
 
 ### Option 2: Standalone macOS App verwenden
@@ -181,12 +187,12 @@ Autoinput/
 │   ├── autoinput.py             # Haupt-Autoclicker
 │   ├── autoinput_toggle.py      # Toggle-Modus
 │   ├── debug_autoinput.py       # Debug/Hold-Modus
-│   ├── autoinput_gui_toga.py    # Toga GUI (aktiv)
-│   ├── autoinput_gui.py         # Tkinter GUI (legacy)
+│   ├── autoinput_gui_toga.py    # Toga GUI (Production)
+│   ├── autoinput_gui_tkinter.py # Tkinter GUI (Legacy)
 │   └── web_controller.py        # Web-Interface
 ├── scripts/                     # Shell-Skripte
-│   ├── start_autoinput_gui_toga.sh
-│   ├── start_autoinput_gui.sh
+│   ├── start_autoinput_gui.sh       # Toga GUI (Haupt)
+│   ├── start_autoinput_gui_tkinter.sh # Tkinter GUI (Legacy)
 │   ├── start_web_controller.sh
 │   ├── run_autoinput.sh
 │   ├── run_toggle.sh
