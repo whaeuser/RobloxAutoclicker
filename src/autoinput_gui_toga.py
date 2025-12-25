@@ -32,7 +32,7 @@ class AutoinputApp(toga.App):
 
         # Variablen
         self.process = None
-        self.config_path = Path(__file__).parent / "config.yaml"
+        self.config_path = Path(__file__).parent.parent / "config.yaml"
         self.log_file_path = Path("/tmp/autoinput_toga.log")
         self.log_file_handle = None
 
@@ -371,7 +371,7 @@ class AutoinputApp(toga.App):
                 script_path = Path(__file__).parent / "autoinput_toggle.py"
                 mode_name = "Toggle"
             else:
-                script_path = Path(__file__).parent / "debug_autoclicker.py"
+                script_path = Path(__file__).parent / "debug_autoinput.py"
                 mode_name = "Hold"
 
             self.log(f"▶️  Starte Autoclicker ({mode_name}-Modus)...")
