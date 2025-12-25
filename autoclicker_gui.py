@@ -20,7 +20,7 @@ class AutoclickerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("🎮 Roblox Autoclicker")
-        self.root.geometry("1100x850")  # Höhe erhöht für Reset-Button Sichtbarkeit
+        self.root.geometry("1100x800")
 
         self.process = None
         self.config_path = Path(__file__).parent / "config.yaml"
@@ -35,6 +35,9 @@ class AutoclickerGUI:
         self.setup_ui()
         self.load_config()
         self.update_cps_display()
+
+        # Fix rendering - force repaint after window is ready
+        self.root.after(10, lambda: self.root.update())
 
     def setup_ui(self):
         # Header
@@ -65,6 +68,31 @@ class AutoclickerGUI:
         test_tab = tk.Frame(notebook)
         notebook.add(test_tab, text="🎯 Klick-Test")
         self.setup_test_tab(test_tab)
+
+        # Store tabs for event handling
+        self.tabs = [control_tab, config_tab, test_tab]
+
+        # Fix tab rendering on switch
+        def on_tab_change(event):
+            try:
+                current = notebook.index(notebook.select())
+                current_tab = self.tabs[current]
+
+                # Force geometry recalculation
+                current_tab.update_idletasks()
+
+                # Force focus to trigger redraw
+                current_tab.focus_set()
+
+                # Resize window by 1 pixel and back to force redraw
+                w = self.root.winfo_width()
+                h = self.root.winfo_height()
+                self.root.geometry(f"{w+1}x{h}")
+                self.root.after(10, lambda: self.root.geometry(f"{w}x{h}"))
+            except:
+                pass
+
+        notebook.bind("<<NotebookTabChanged>>", on_tab_change)
 
         # Footer
         footer = tk.Frame(self.root, bg="#f1f5f9", height=35)
@@ -299,6 +327,13 @@ class AutoclickerGUI:
 
         self.click_area.bind("<Button-1>", self.register_test_click)
 
+        # Reset Button direkt unter Klick-Kreis
+        reset_btn_frame, reset_btn_label = self.create_custom_button(
+            test_frame, "🔄 Test zurücksetzen", self.reset_click_test,
+            "#f97316", "#ea580c", tk.NORMAL  # Orange
+        )
+        reset_btn_frame.pack(pady=10)
+
         # Stats
         stats_frame = tk.Frame(test_frame)
         stats_frame.pack(pady=20)
@@ -323,16 +358,6 @@ class AutoclickerGUI:
                                    bg="#e2e8f0", fg="black")
             label_widget.pack()
             setattr(self, f"{attr}_label", label_widget)
-
-        # Reset Button direkt unter Stats
-        button_container = tk.Frame(test_frame)
-        button_container.pack(pady=15)
-
-        reset_btn_frame, reset_btn_label = self.create_custom_button(
-            button_container, "🔄 Test zurücksetzen", self.reset_click_test,
-            "#f97316", "#ea580c", tk.NORMAL  # Orange
-        )
-        reset_btn_frame.pack()
 
     def load_config(self):
         """Lädt die Konfiguration aus der YAML-Datei"""
