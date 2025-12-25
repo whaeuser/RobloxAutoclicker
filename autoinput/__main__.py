@@ -18,6 +18,17 @@ import yaml
 import time
 from pathlib import Path
 from datetime import datetime
+import platform
+import tempfile
+
+# ------------------- Platform Detection ----------------------------
+def is_windows():
+    """Check if running on Windows"""
+    return platform.system() == 'Windows'
+
+def get_python_executable():
+    """Get the correct Python executable for this platform"""
+    return sys.executable
 
 
 class AutoinputApp(toga.App):
@@ -33,7 +44,7 @@ class AutoinputApp(toga.App):
         # Variablen
         self.process = None
         self.config_path = Path(__file__).parent / "config.yaml"
-        self.log_file_path = Path("/tmp/autoinput_toga.log")
+        self.log_file_path = Path(tempfile.gettempdir()) / "autoinput_toga.log"
         self.log_file_handle = None
 
         # Klick-Test Variablen
@@ -457,13 +468,21 @@ class AutoinputApp(toga.App):
             self.log_file_handle = open(self.log_file_path, 'w', buffering=1)
             self.log_file_position = 0
 
+            # Plattformübergreifende Subprocess-Erstellung
+            popen_kwargs = {
+                'stdout': self.log_file_handle,
+                'stderr': subprocess.STDOUT,
+                'env': env
+            }
+
+            # Nur auf POSIX-Systemen process group erstellen
+            if not is_windows():
+                popen_kwargs['preexec_fn'] = os.setsid
+
             # Starte Subprocess mit Output in Log-Datei
             self.process = subprocess.Popen(
-                ['python3', '-u', str(script_path)],
-                stdout=self.log_file_handle,
-                stderr=subprocess.STDOUT,
-                env=env,
-                preexec_fn=os.setsid
+                [get_python_executable(), '-u', str(script_path)],
+                **popen_kwargs
             )
 
             # Buttons aktualisieren
@@ -486,19 +505,27 @@ class AutoinputApp(toga.App):
         try:
             self.log("⏹️  Stoppe Autoclicker...")
 
-            # Versuche zuerst SIGTERM
-            try:
-                os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-                self.process.wait(timeout=2)
-            except:
-                # Falls SIGTERM nicht funktioniert, versuche SIGKILL
+            # Plattformübergreifende Process Termination
+            if is_windows():
+                # Windows: Einfach terminate/kill verwenden
                 try:
-                    os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                    self.process.terminate()  # Graceful SIGTERM
+                    self.process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()  # Force kill
+                    self.process.wait(timeout=2)
+            else:
+                # macOS/Linux: Process group termination
+                try:
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
                     self.process.wait(timeout=2)
                 except:
-                    # Letzter Versuch: direkt kill
-                    self.process.kill()
-                    self.process.wait(timeout=2)
+                    try:
+                        os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                        self.process.wait(timeout=2)
+                    except:
+                        self.process.kill()
+                        self.process.wait(timeout=2)
 
             self.process = None
 

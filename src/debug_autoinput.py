@@ -15,10 +15,21 @@ from pathlib import Path
 from pynput import keyboard
 import pyautogui
 import yaml
+import platform
+import tempfile
 
 # PyAutoGUI Optimierungen
 pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = False
+
+# ------------------- Platform Detection ----------------------------
+def is_windows():
+    """Check if running on Windows"""
+    return platform.system() == 'Windows'
+
+def get_python_executable():
+    """Get the correct Python executable for this platform"""
+    return sys.executable
 
 # Immer Logging aktivieren für Debug
 FORCE_LOGGING = True
@@ -330,25 +341,26 @@ def main():
     print("🐛 DEBUG MODE - Autoinput")
     print("=" * 70 + "\n")
 
-    # Prüfe ob bereits ein Autoclicker läuft und beende ihn
-    try:
-        import subprocess
-        result = subprocess.run(
-            ['pgrep', '-f', 'autoinput|debug_autoclicker'],
-            capture_output=True,
-            text=True
-        )
-        if result.stdout.strip():
-            pids = result.stdout.strip().split('\n')
-            current_pid = str(os.getpid())
-            for pid in pids:
-                if pid and pid != current_pid:
-                    print(f"⚠️  Anderer Autoclicker läuft bereits (PID: {pid}), beende...")
-                    os.system(f"kill -9 {pid} 2>/dev/null")
-                    time.sleep(0.5)
-            print("✅ Alte Prozesse beendet\n")
-    except Exception as e:
-        pass  # Fehler ignorieren, Script trotzdem starten
+    # Prüfe ob bereits ein Autoclicker läuft und beende ihn (nur auf macOS/Linux)
+    if not is_windows():
+        try:
+            import subprocess
+            result = subprocess.run(
+                ['pgrep', '-f', 'autoinput|debug_autoclicker'],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout.strip():
+                pids = result.stdout.strip().split('\n')
+                current_pid = str(os.getpid())
+                for pid in pids:
+                    if pid and pid != current_pid:
+                        print(f"⚠️  Anderer Autoclicker läuft bereits (PID: {pid}), beende...")
+                        os.system(f"kill -9 {pid} 2>/dev/null")
+                        time.sleep(0.5)
+                print("✅ Alte Prozesse beendet\n")
+        except Exception as e:
+            pass  # Fehler ignorieren, Script trotzdem starten
 
     # Config laden
     _config = load_config()
