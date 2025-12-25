@@ -28,6 +28,8 @@ def is_windows():
 
 def get_python_executable():
     """Get the correct Python executable for this platform"""
+    # WICHTIG: Wir MÜSSEN System-Python verwenden, weil pyautogui/pynput
+    # nicht in die App gebündelt werden können (keine ARM64 wheels)
     return sys.executable
 
 

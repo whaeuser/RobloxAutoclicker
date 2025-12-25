@@ -14,6 +14,8 @@ requires = [
     'toga>=0.4.0',
     'pyyaml',
 ]
+# pyautogui und pynput können nicht gebündelt werden (keine ARM64 wheels)
+# Müssen auf dem Ziel-System installiert sein
 
 [tool.briefcase.app.autoinput.license]
 text = "MIT"
