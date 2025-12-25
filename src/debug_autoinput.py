@@ -27,7 +27,7 @@ def log(msg, prefix="INFO"):
 
 def load_config():
     """Lädt die Konfiguration aus config.yaml"""
-    config_path = Path(__file__).parent / "config.yaml"
+    config_path = Path(__file__).parent.parent / "config.yaml"
 
     log(f"Lade Config von: {config_path}")
 

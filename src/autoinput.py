@@ -31,7 +31,7 @@ pyautogui.FAILSAFE = False  # Failsafe deaktivieren für bessere Performance
 # ------------------- Config Loader ---------------------------------
 def load_config():
     """Lädt die Konfiguration aus config.yaml"""
-    config_path = Path(__file__).parent / "config.yaml"
+    config_path = Path(__file__).parent.parent / "config.yaml"
 
     if not config_path.exists():
         print(f"❌ Konfigurationsdatei nicht gefunden: {config_path}")
