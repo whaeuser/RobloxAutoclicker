@@ -23,5 +23,14 @@ Thumbs.db
 # macOS App Bundle (build artifact)
 *.app/
 
+# Briefcase/Toga Build Artifacts
+macOS/
+iOS/
+android/
+linux/
+windows/
+*.dmg
+*.AppImage
+
 # Config (if contains sensitive data)
 # config.yaml
