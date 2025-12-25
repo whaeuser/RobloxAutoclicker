@@ -8,11 +8,13 @@ author_email = "noreply@example.com"
 
 [tool.briefcase.app.autoinput]
 formal_name = "Autoinput"
-description = "Konfigurierbarer Autoclicker für macOS"
+description = "Konfigurierbarer Autoclicker für macOS und Windows"
 sources = ['autoinput']
 requires = [
     'toga>=0.4.0',
     'pyyaml',
+    'pyautogui',
+    'pynput',
 ]
 
 [tool.briefcase.app.autoinput.license]
@@ -21,6 +23,13 @@ text = "MIT"
 [tool.briefcase.app.autoinput.macOS]
 requires = [
     'toga-cocoa>=0.4.0',
+]
+
+[tool.briefcase.app.autoinput.windows]
+requires = [
+    'toga-winforms>=0.4.0',
+    'pyautogui',
+    'pynput',
 ]
 
 [build-system]
