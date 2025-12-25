@@ -311,11 +311,12 @@ class AutoinputApp(toga.App):
 
     def update_config_display(self, config):
         """Aktualisiert die Config-Anzeige"""
+        hotkey = config.get('hotkey', 'shift').upper()
         cps = config.get('clicks_per_second', '?')
         mode = config.get('activation_mode', 'hold')
         mode_text = "Toggle" if mode == 'toggle' else "Hold"
 
-        self.config_info.text = f"CPS: {cps} | Modus: {mode_text}"
+        self.config_info.text = f"Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
 
     def save_config(self, widget):
         """Speichert die Konfiguration"""
@@ -340,8 +341,7 @@ class AutoinputApp(toga.App):
                 yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
 
             self.update_config_display(config)
-            self.log("💾 Konfiguration gespeichert!")
-            self.main_window.dialog(toga.InfoDialog("Erfolg", "✅ Konfiguration erfolgreich gespeichert!"))
+            self.log("✅ Konfiguration erfolgreich gespeichert!")
 
             # Autoclicker wieder starten falls er vorher lief
             if was_running:
@@ -353,7 +353,6 @@ class AutoinputApp(toga.App):
 
         except Exception as e:
             self.log(f"❌ Fehler beim Speichern: {e}")
-            self.main_window.dialog(toga.ErrorDialog("Fehler", f"Fehler beim Speichern:\n{e}"))
 
     def start_autoclicker(self, widget):
         """Startet den Autoclicker"""
@@ -403,7 +402,6 @@ class AutoinputApp(toga.App):
 
         except Exception as e:
             self.log(f"❌ Fehler beim Starten: {e}")
-            self.main_window.dialog(toga.ErrorDialog("Fehler", f"Fehler beim Starten:\n{e}"))
 
     def stop_autoclicker(self, widget):
         """Stoppt den Autoclicker"""
