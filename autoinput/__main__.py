@@ -28,8 +28,21 @@ def is_windows():
 
 def get_python_executable():
     """Get the correct Python executable for this platform"""
-    # WICHTIG: Wir MÜSSEN System-Python verwenden, weil pyautogui/pynput
-    # nicht in die App gebündelt werden können (keine ARM64 wheels)
+    # WICHTIG: In einer Briefcase .app ist sys.executable der App-Stub, NICHT Python!
+    # Wir MÜSSEN System-Python verwenden
+
+    # Check if we're in a .app bundle (sys.executable ends with app name)
+    if sys.executable.endswith('Autoinput') or sys.executable.endswith('Autoinput.app'):
+        # Wir sind in der .app! Finde System-Python
+        import shutil
+        python_path = shutil.which('python3')
+        if python_path:
+            return python_path
+        # Fallback: Homebrew Python
+        for path in ['/opt/homebrew/bin/python3', '/usr/local/bin/python3', '/usr/bin/python3']:
+            if Path(path).exists():
+                return path
+
     return sys.executable
 
 
@@ -468,6 +481,10 @@ class AutoinputApp(toga.App):
                 script_path = Path(__file__).parent / "debug_autoinput.py"
                 mode_name = "Hold"
 
+            # Debug: Zeige Script-Pfad
+            self.log(f"📝 Script-Pfad: {script_path}")
+            self.log(f"📝 Existiert: {script_path.exists()}")
+            self.log(f"📝 Python: {get_python_executable()}")
             self.log(f"▶️  Starte Autoclicker ({mode_name}-Modus)...")
 
             # Umgebungsvariablen für unbuffered output
