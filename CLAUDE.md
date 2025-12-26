@@ -102,22 +102,36 @@ def main():
 
 ### New Features: Idle Prevention & Randomization
 
-**Idle Prevention** (added 2025-12-26):
-- Performs small mouse movements (±1-2px) to prevent system idle detection
-- Only active when autoclicker is running (`_clicking = True`)
-- Uses `pyautogui.moveRel()` to move and immediately returns to original position
-- Tracked via `_last_activity_time` global variable
+**Idle Prevention** (added 2025-12-26, simplified 2025-12-27):
+- **Purpose**: Performs small mouse movements (±1-2px) to prevent system idle detection
+- **Mode Behavior**: This is an EXCLUSIVE mode - when enabled, ONLY mouse movements occur, NO clicking
+- **Implementation**:
+  - Uses `pyautogui.moveRel()` to move ±1-2px and immediately returns to original position
+  - Tracked via `_last_activity_time` global variable
+  - Movement occurs every N seconds (default: 30s, configurable)
+- **Threading**: In Idle Prevention mode, only Click Worker thread runs (no Event Tap thread)
+- **Control**: Activated/deactivated using Start/Stop buttons only (no hotkey)
+- **Display**: Shows simplified header: "🐭 IDLE PREVENTION | Intervall: Xs"
 
 **Click Rhythm Randomization** (added 2025-12-26):
 - Varies click intervals by configurable percentage (default ±20%)
+- Only works in normal clicking mode (not in Idle Prevention mode)
 - Calculated per-click using `random.uniform()`
 - Enforces minimum interval of 0.001s (max 1000 CPS) for safety
 - Applied to both mouse clicks and keyboard actions
 
-Both features are:
-- Disabled by default in `config.yaml`
+**Implementation Details**:
+- Both features disabled by default in `config.yaml`
 - Configured via GUI switches and number inputs
-- Independent and can be enabled separately
+- Features are MUTUALLY EXCLUSIVE: Idle Prevention OR normal clicking (with optional randomization)
+- Two distinct code paths in `main()`:
+  1. Idle Prevention: Sets `_clicking = True` directly, starts only Click Worker, no Event Tap
+  2. Normal Clicking: Uses Event Tap for hotkey monitoring, starts both threads
+
+**Recent Changes** (commits c2d5899, 5fef695):
+- Initial implementation added both features with GUI controls
+- Simplified Idle Prevention to remove hotkey requirement and clean up display
+- Context-aware display shows only relevant information per mode
 
 ### GUI Architecture (autoinput/__main__.py)
 
