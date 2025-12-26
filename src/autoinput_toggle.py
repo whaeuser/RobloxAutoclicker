@@ -44,7 +44,7 @@ def get_python_executable():
 # ------------------- Config Loader ---------------------------------
 def load_config():
     """Lädt die Konfiguration aus config.yaml"""
-    config_path = Path(__file__).parent.parent / "config.yaml"
+    config_path = Path(__file__).parent / "config.yaml"
 
     if not config_path.exists():
         print(f"❌ Konfigurationsdatei nicht gefunden: {config_path}")
@@ -319,10 +319,11 @@ def cleanup_handler():
 def main():
     global _config
 
-    # Cleanup-Handler registrieren
+    # Cleanup-Handler registrieren (funktioniert auch in Threads)
     atexit.register(cleanup_handler)
-    signal.signal(signal.SIGTERM, lambda sig, frame: (cleanup_handler(), sys.exit(0)))
-    signal.signal(signal.SIGINT, lambda sig, frame: (cleanup_handler(), sys.exit(0)))
+
+    # Signal-Handler werden übersprungen wenn in Thread
+    # (funktionieren nur im Main-Thread)
 
     # Prüfe ob bereits ein Autoclicker läuft und beende ihn (nur auf macOS/Linux)
     if not is_windows():

@@ -40,7 +40,7 @@ def log(msg, prefix="INFO"):
 
 def load_config():
     """Lädt die Konfiguration aus config.yaml"""
-    config_path = Path(__file__).parent.parent / "config.yaml"
+    config_path = Path(__file__).parent / "config.yaml"
 
     log(f"Lade Config von: {config_path}")
 
@@ -332,10 +332,11 @@ def cleanup_handler():
 def main():
     global _config
 
-    # Cleanup-Handler registrieren
+    # Cleanup-Handler registrieren (funktioniert auch in Threads)
     atexit.register(cleanup_handler)
-    signal.signal(signal.SIGTERM, lambda sig, frame: (cleanup_handler(), sys.exit(0)))
-    signal.signal(signal.SIGINT, lambda sig, frame: (cleanup_handler(), sys.exit(0)))
+
+    # Signal-Handler werden übersprungen wenn in Thread
+    # (funktionieren nur im Main-Thread)
 
     print("\n" + "=" * 70)
     print("🐛 DEBUG MODE - Autoinput")

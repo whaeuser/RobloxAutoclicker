@@ -1,7 +1,10 @@
 activation_mode: hold
 click_mode: fast
-clicks_per_second: 12
+clicks_per_second: 10
 enable_logging: true
 hotkey: shift
+input_type: mouse
+keyboard_key: a
+keyboard_mode: repeat
 target_position: null
 verbose_mode: false

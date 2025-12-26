@@ -5,3 +5,4 @@ enable_logging: true
 hotkey: shift
 target_position: null
 verbose_mode: false
+debug_mode: false

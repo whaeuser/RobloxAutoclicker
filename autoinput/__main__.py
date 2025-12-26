@@ -28,22 +28,35 @@ def is_windows():
 
 def get_python_executable():
     """Get the correct Python executable for this platform"""
-    # WICHTIG: In einer Briefcase .app ist sys.executable der App-Stub, NICHT Python!
-    # Wir MÜSSEN System-Python verwenden
+    # WICHTIG: Wir brauchen Python 3.13, weil die gebündelten Packages für 3.13 kompiliert sind!
+    import shutil
 
-    # Check if we're in a .app bundle (sys.executable ends with app name)
-    if sys.executable.endswith('Autoinput') or sys.executable.endswith('Autoinput.app'):
-        # Wir sind in der .app! Finde System-Python
-        import shutil
-        python_path = shutil.which('python3')
+    # Versuche zuerst python3.13 zu finden
+    for python_cmd in ['python3.13', 'python3']:
+        python_path = shutil.which(python_cmd)
         if python_path:
-            return python_path
-        # Fallback: Homebrew Python
-        for path in ['/opt/homebrew/bin/python3', '/usr/local/bin/python3', '/usr/bin/python3']:
-            if Path(path).exists():
-                return path
+            # Prüfe Version
+            try:
+                import subprocess
+                version_output = subprocess.check_output([python_path, '--version'], text=True, stderr=subprocess.STDOUT)
+                if '3.13' in version_output:
+                    return python_path
+            except:
+                pass
 
-    return sys.executable
+    # Fallback: Bekannte Python 3.13 Pfade
+    known_paths = [
+        '/opt/homebrew/Caskroom/miniconda/base/bin/python3',  # Miniconda
+        '/opt/homebrew/bin/python3.13',
+        '/usr/local/bin/python3.13',
+    ]
+
+    for path in known_paths:
+        if Path(path).exists():
+            return path
+
+    # Letzter Fallback: Irgendein python3
+    return shutil.which('python3') or 'python3'
 
 
 class AutoinputApp(toga.App):
@@ -57,7 +70,8 @@ class AutoinputApp(toga.App):
         """Wird beim App-Start aufgerufen"""
 
         # Variablen
-        self.process = None
+        self.autoclicker_thread = None
+        self.stop_autoclicker_flag = False
         self.config_path = Path(__file__).parent / "config.yaml"
         self.log_file_path = Path(tempfile.gettempdir()) / "autoinput_toga.log"
         self.log_file_handle = None
@@ -132,6 +146,7 @@ class AutoinputApp(toga.App):
         # Haupt-Fenster
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = main_box
+        self.main_window.size = (800, 700)  # Breite x Höhe in Pixel
         self.main_window.show()
 
         # Config laden
@@ -290,6 +305,13 @@ class AutoinputApp(toga.App):
         )
         box.add(self.verbose_switch)
 
+        # Debug Mode (Event Tap Details)
+        self.debug_switch = toga.Switch(
+            "Debug-Modus (Event Tap Details)",
+            style=Pack(margin=(10, 10))
+        )
+        box.add(self.debug_switch)
+
         # Save Button
         save_btn = toga.Button(
             "💾 Konfiguration speichern",
@@ -380,6 +402,7 @@ class AutoinputApp(toga.App):
             self.hotkey_selection.value = config.get('hotkey', 'shift')
             self.activation_mode_selection.value = config.get('activation_mode', 'hold')
             self.verbose_switch.value = config.get('verbose_mode', False)
+            self.debug_switch.value = config.get('debug_mode', False)
 
             # NEU: Keyboard-Einstellungen laden
             self.input_type_selection.value = config.get('input_type', 'mouse')
@@ -423,6 +446,7 @@ class AutoinputApp(toga.App):
                 'target_position': None,
                 'enable_logging': True,
                 'verbose_mode': self.verbose_switch.value,
+                'debug_mode': self.debug_switch.value,
 
                 # NEU: Keyboard-Einstellungen
                 'input_type': self.input_type_selection.value,
@@ -431,7 +455,7 @@ class AutoinputApp(toga.App):
             }
 
             # Autoclicker stoppen falls er läuft
-            was_running = self.process and self.process.poll() is None
+            was_running = self.autoclicker_thread and self.autoclicker_thread.is_alive()
             if was_running:
                 self.stop_autoclicker(None)
 
@@ -461,7 +485,7 @@ class AutoinputApp(toga.App):
             self.log("⚠️  Start bereits in Bearbeitung...")
             return
 
-        if self.process and self.process.poll() is None:
+        if self.autoclicker_thread and self.autoclicker_thread.is_alive():
             self.log("⚠️  Autoclicker läuft bereits!")
             return
 
@@ -474,45 +498,40 @@ class AutoinputApp(toga.App):
 
             activation_mode = config.get('activation_mode', 'hold')
 
-            if activation_mode == 'toggle':
-                script_path = Path(__file__).parent / "autoinput_toggle.py"
-                mode_name = "Toggle"
-            else:
-                script_path = Path(__file__).parent / "debug_autoinput.py"
-                mode_name = "Hold"
+            # Importiere das neue Quartz-basierte Modul (OHNE pynput!)
+            from autoinput import autoclicker_quartz as autoclicker_module
+            mode_name = "Toggle" if activation_mode == 'toggle' else "Hold"
 
-            # Debug: Zeige Script-Pfad
-            self.log(f"📝 Script-Pfad: {script_path}")
-            self.log(f"📝 Existiert: {script_path.exists()}")
-            self.log(f"📝 Python: {get_python_executable()}")
             self.log(f"▶️  Starte Autoclicker ({mode_name}-Modus)...")
-
-            # Umgebungsvariablen für unbuffered output
-            env = os.environ.copy()
-            env['PYTHONUNBUFFERED'] = '1'
 
             # Öffne Log-Datei zum Schreiben
             self.log_file_handle = open(self.log_file_path, 'w', buffering=1)
             self.log_file_position = 0
+            self.stop_autoclicker_flag = False
 
-            # Plattformübergreifende Subprocess-Erstellung
-            popen_kwargs = {
-                'stdout': self.log_file_handle,
-                'stderr': subprocess.STDOUT,
-                'env': env
-            }
+            # Starte Script in einem Thread - IMPORTIERT statt exec()
+            def run_autoclicker():
+                # Redirect stdout/stderr
+                old_stdout = sys.stdout
+                old_stderr = sys.stderr
+                sys.stdout = self.log_file_handle
+                sys.stderr = self.log_file_handle
 
-            # Nur auf POSIX-Systemen process group erstellen
-            if not is_windows():
-                popen_kwargs['preexec_fn'] = os.setsid
+                try:
+                    # Rufe main() Funktion auf (kein exec!)
+                    autoclicker_module.main()
+                except Exception as e:
+                    import traceback
+                    print(f"[ERROR] {traceback.format_exc()}")
+                finally:
+                    # Restore stdout/stderr
+                    sys.stdout = old_stdout
+                    sys.stderr = old_stderr
 
-            # Starte Subprocess mit Output in Log-Datei
-            self.process = subprocess.Popen(
-                [get_python_executable(), '-u', str(script_path)],
-                **popen_kwargs
-            )
+            self.autoclicker_thread = threading.Thread(target=run_autoclicker, daemon=True)
+            self.autoclicker_thread.start()
 
-            # Buttons aktualisieren (start_btn bereits deaktiviert)
+            # Buttons aktualisieren
             self.stop_btn.enabled = True
             self.status_label.text = "🟢 Läuft"
 
@@ -521,6 +540,8 @@ class AutoinputApp(toga.App):
 
         except Exception as e:
             self.log(f"❌ Fehler beim Starten: {e}")
+            import traceback
+            self.log(traceback.format_exc())
             # Bei Fehler: Button wieder aktivieren
             self.start_btn.enabled = True
             self.stop_btn.enabled = False
@@ -528,36 +549,26 @@ class AutoinputApp(toga.App):
 
     def stop_autoclicker(self, widget):
         """Stoppt den Autoclicker"""
-        if not self.process or self.process.poll() is not None:
+        if not self.autoclicker_thread or not self.autoclicker_thread.is_alive():
             self.log("⚠️  Autoclicker läuft nicht!")
             return
 
         try:
             self.log("⏹️  Stoppe Autoclicker...")
+            self.log("💡 Sende ESC-Signal an Autoclicker...")
 
-            # Plattformübergreifende Process Termination
-            if is_windows():
-                # Windows: Einfach terminate/kill verwenden
-                try:
-                    self.process.terminate()  # Graceful SIGTERM
-                    self.process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    self.process.kill()  # Force kill
-                    self.process.wait(timeout=2)
-            else:
-                # macOS/Linux: Process group termination
-                try:
-                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-                    self.process.wait(timeout=2)
-                except:
-                    try:
-                        os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
-                        self.process.wait(timeout=2)
-                    except:
-                        self.process.kill()
-                        self.process.wait(timeout=2)
+            # Simuliere ESC-Taste um Autoclicker zu stoppen
+            try:
+                from pynput import keyboard
+                controller = keyboard.Controller()
+                controller.press(keyboard.Key.esc)
+                controller.release(keyboard.Key.esc)
+                self.log("✅ ESC gesendet - Autoclicker wird beendet...")
+            except Exception as e:
+                self.log(f"⚠️  Konnte ESC nicht senden: {e}")
 
-            self.process = None
+            # Warte kurz auf Thread-Ende
+            self.autoclicker_thread.join(timeout=2)
 
             # Schließe Log-Datei
             if self.log_file_handle:
