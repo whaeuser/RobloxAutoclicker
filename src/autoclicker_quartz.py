@@ -13,6 +13,7 @@ import sys
 import atexit
 from pathlib import Path
 import yaml
+import random
 
 # macOS Frameworks (gebündelt mit pyobjc)
 from Quartz import (
@@ -135,6 +136,7 @@ _held_key = None
 _hotkey_keycode = None
 _hotkey_was_pressed = False
 _event_tap_runloop = None
+_last_activity_time = None
 
 def _log(msg):
     if _config and _config.get('enable_logging', False):
@@ -223,6 +225,47 @@ def _release_held_key():
             print(f"⚠️  Fehler beim Loslassen der Taste: {e}")
         finally:
             _held_key = None
+
+def _perform_idle_prevention():
+    """Führt kleine Mausbewegung aus um Idle-Erkennung zu verhindern"""
+    global _last_activity_time
+
+    try:
+        # Aktuelle Position merken
+        current_pos = pyautogui.position()
+
+        # 1-2 Pixel nach rechts bewegen
+        offset = random.choice([1, 2])
+        pyautogui.moveRel(offset, 0, duration=0.1)
+        _verbose_log(f"🐭 IDLE PREVENTION: Bewegt {offset}px nach rechts")
+
+        # Kurz warten
+        time.sleep(0.05)
+
+        # Zurück zur Originalposition
+        pyautogui.moveRel(-offset, 0, duration=0.1)
+        _verbose_log(f"🐭 IDLE PREVENTION: Zurück zur Originalposition")
+
+        _last_activity_time = time.time()
+    except Exception as e:
+        print(f"⚠️  Fehler bei Idle Prevention: {e}")
+
+def _calculate_randomized_interval(base_interval, randomness_percent):
+    """Berechnet randomisiertes Intervall mit ±randomness_percent Variation"""
+    if randomness_percent <= 0:
+        return base_interval
+
+    # Variations-Range berechnen
+    variation = base_interval * (randomness_percent / 100.0)
+
+    # Zufällige Variation anwenden
+    randomized = base_interval + random.uniform(-variation, variation)
+
+    # Minimum-Intervall sicherstellen (0.001s = max 1000 CPS)
+    min_interval = 0.001
+    final_interval = max(min_interval, randomized)
+
+    return final_interval
 
 # ------------------- Event Tap Callback ----------------------------
 
@@ -349,8 +392,9 @@ def _event_tap_thread():
 
 def _click_worker():
     """Worker-Thread für automatisches Klicken"""
-    global _clicking, _stop_thread
+    global _clicking, _stop_thread, _last_activity_time
 
+    # Basis-Konfiguration laden
     interval = 1.0 / _config['clicks_per_second']
     target_pos = _config.get('target_position')
     click_mode = _config.get('click_mode', 'fast')
@@ -359,24 +403,54 @@ def _click_worker():
     keyboard_keycode = _config.get('keyboard_keycode')
     keyboard_mode = _config.get('keyboard_mode', 'repeat')
 
+    # NEU: Idle Prevention Einstellungen
+    prevent_idle = _config.get('prevent_idle', False)
+    idle_interval = _config.get('idle_prevention_interval', 30)
+
+    # NEU: Randomisierungs-Einstellungen
+    randomize_timing = _config.get('randomize_timing', False)
+    randomness_percent = _config.get('randomness_percent', 20.0)
+
     _debug_log(f"Click-Worker gestartet - Input: {input_type}, CPS: {_config['clicks_per_second']}")
+    _debug_log(f"Idle Prevention: {prevent_idle}, Randomization: {randomize_timing}")
 
     key_is_held = False
 
     while not _stop_thread:
         if _clicking:
-            if input_type == 'keyboard':
-                if keyboard_mode == 'hold':
-                    if not key_is_held:
-                        _perform_keyboard_action(keyboard_keycode, keyboard_mode)
-                        key_is_held = True
-                    time.sleep(0.1)
-                else:
-                    _perform_keyboard_action(keyboard_keycode, keyboard_mode)
-                    time.sleep(interval)
+            # NEU: Idle Prevention Only Mode
+            if prevent_idle:
+                # Nur Mausbewegungen, KEIN Clicking
+                _perform_idle_prevention()
+                time.sleep(idle_interval)
             else:
-                _perform_click(target_pos, click_mode)
-                time.sleep(interval)
+                # Normaler Clicking-Modus
+                if input_type == 'keyboard':
+                    if keyboard_mode == 'hold':
+                        if not key_is_held:
+                            _perform_keyboard_action(keyboard_keycode, keyboard_mode)
+                            key_is_held = True
+                        time.sleep(0.1)
+                    else:
+                        _perform_keyboard_action(keyboard_keycode, keyboard_mode)
+
+                        # NEU: Randomisierung für Keyboard-Intervalle
+                        if randomize_timing:
+                            sleep_time = _calculate_randomized_interval(interval, randomness_percent)
+                        else:
+                            sleep_time = interval
+
+                        time.sleep(sleep_time)
+                else:
+                    _perform_click(target_pos, click_mode)
+
+                    # NEU: Randomisierung für Maus-Intervalle
+                    if randomize_timing:
+                        sleep_time = _calculate_randomized_interval(interval, randomness_percent)
+                    else:
+                        sleep_time = interval
+
+                    time.sleep(sleep_time)
         else:
             if key_is_held:
                 _release_held_key()
@@ -392,7 +466,7 @@ def cleanup_handler():
     _release_held_key()
 
 def main():
-    global _config, _hotkey_keycode, _stop_thread, _clicking, _hotkey_was_pressed, _click_counter, _held_key, _event_tap_runloop, _last_shift_state
+    global _config, _hotkey_keycode, _stop_thread, _clicking, _hotkey_was_pressed, _click_counter, _held_key, _event_tap_runloop, _last_shift_state, _last_activity_time
 
     # WICHTIG: State zurücksetzen für neuen Run!
     _stop_thread = False
@@ -402,6 +476,7 @@ def main():
     _held_key = None
     _event_tap_runloop = None
     _last_shift_state = False
+    _last_activity_time = None
 
     # Cleanup-Handler registrieren
     atexit.register(cleanup_handler)

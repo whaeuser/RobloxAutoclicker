@@ -312,6 +312,61 @@ class AutoinputApp(toga.App):
         )
         box.add(self.debug_switch)
 
+        # Idle Prevention Einstellungen
+        idle_prevention_label = toga.Label(
+            "--- Anti-Idle Einstellungen ---",
+            style=Pack(margin=(15, 5), font_weight="bold")
+        )
+        box.add(idle_prevention_label)
+
+        self.prevent_idle_switch = toga.Switch(
+            "Idle Prevention aktivieren (NUR Mausbewegungen, KEIN Clicking)",
+            style=Pack(margin=(10, 10))
+        )
+        box.add(self.prevent_idle_switch)
+
+        idle_interval_label = toga.Label(
+            "Idle Prevention Intervall (Sekunden):",
+            style=Pack(margin=(5, 5))
+        )
+        box.add(idle_interval_label)
+
+        self.idle_interval_input = toga.NumberInput(
+            min=5,
+            max=300,
+            style=Pack(margin=(5, 5))
+        )
+        self.idle_interval_input.value = 30
+        box.add(self.idle_interval_input)
+
+        # Timing Randomisierung Einstellungen
+        timing_randomization_label = toga.Label(
+            "--- Timing Randomisierung ---",
+            style=Pack(margin=(15, 5), font_weight="bold")
+        )
+        box.add(timing_randomization_label)
+
+        self.randomize_timing_switch = toga.Switch(
+            "Klick-Timing randomisieren",
+            style=Pack(margin=(10, 10))
+        )
+        box.add(self.randomize_timing_switch)
+
+        randomness_label = toga.Label(
+            "Zufälligkeit (%): ±20% = Interval variiert um ±20%",
+            style=Pack(margin=(5, 5), font_size=9)
+        )
+        box.add(randomness_label)
+
+        self.randomness_input = toga.NumberInput(
+            min=0,
+            max=50,
+            step=0.1,
+            style=Pack(margin=(5, 5))
+        )
+        self.randomness_input.value = 20
+        box.add(self.randomness_input)
+
         # Save Button
         save_btn = toga.Button(
             "💾 Konfiguration speichern",
@@ -412,6 +467,14 @@ class AutoinputApp(toga.App):
             # UI aktualisieren
             self.on_input_type_changed(None)
 
+            # NEU: Idle Prevention Einstellungen laden
+            self.prevent_idle_switch.value = config.get('prevent_idle', False)
+            self.idle_interval_input.value = config.get('idle_prevention_interval', 30)
+
+            # NEU: Randomisierungs-Einstellungen laden
+            self.randomize_timing_switch.value = config.get('randomize_timing', False)
+            self.randomness_input.value = config.get('randomness_percent', 20.0)
+
             self.update_config_display(config)
         except Exception as e:
             self.log(f"❌ Fehler beim Laden der Config: {e}")
@@ -451,7 +514,15 @@ class AutoinputApp(toga.App):
                 # NEU: Keyboard-Einstellungen
                 'input_type': self.input_type_selection.value,
                 'keyboard_key': self.keyboard_key_selection.value,
-                'keyboard_mode': self.keyboard_mode_selection.value
+                'keyboard_mode': self.keyboard_mode_selection.value,
+
+                # NEU: Idle Prevention Einstellungen
+                'prevent_idle': self.prevent_idle_switch.value,
+                'idle_prevention_interval': int(self.idle_interval_input.value),
+
+                # NEU: Timing Randomisierung
+                'randomize_timing': self.randomize_timing_switch.value,
+                'randomness_percent': float(self.randomness_input.value)
             }
 
             # Autoclicker stoppen falls er läuft

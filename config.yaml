@@ -8,3 +8,7 @@ keyboard_key: a
 keyboard_mode: repeat
 target_position: null
 verbose_mode: false
+prevent_idle: false
+idle_prevention_interval: 30
+randomize_timing: false
+randomness_percent: 20.0
