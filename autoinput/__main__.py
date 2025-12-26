@@ -482,21 +482,35 @@ class AutoinputApp(toga.App):
     def update_config_display(self, config):
         """Aktualisiert die Config-Anzeige"""
         hotkey = config.get('hotkey', 'shift').upper()
-        cps = config.get('clicks_per_second', '?')
         mode = config.get('activation_mode', 'hold')
         mode_text = "Toggle" if mode == 'toggle' else "Hold"
 
-        # NEU: Input-Typ Info
-        input_type = config.get('input_type', 'mouse')
-        input_type_text = "Tastatur" if input_type == 'keyboard' else "Maus"
+        # NEU: Feature-Status
+        prevent_idle = config.get('prevent_idle', False)
+        randomize = config.get('randomize_timing', False)
 
-        if input_type == 'keyboard':
-            keyboard_key = config.get('keyboard_key', 'a').upper()
-            keyboard_mode = config.get('keyboard_mode', 'repeat')
-            kb_mode_text = "Halten" if keyboard_mode == 'hold' else "Wiederholen"
-            self.config_info.text = f"{input_type_text}: {keyboard_key} ({kb_mode_text}) | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
+        # IDLE PREVENTION MODE: Vereinfachte Anzeige
+        if prevent_idle:
+            interval = config.get('idle_prevention_interval', 30)
+            self.config_info.text = f"🐭 IDLE PREVENTION | Intervall: {interval}s"
         else:
-            self.config_info.text = f"{input_type_text} | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}"
+            # NORMALER CLICKING MODUS
+            cps = config.get('clicks_per_second', '?')
+            input_type = config.get('input_type', 'mouse')
+            input_type_text = "Tastatur" if input_type == 'keyboard' else "Maus"
+
+            feature_text = ""
+            if randomize:
+                percent = config.get('randomness_percent', 20)
+                feature_text = f" | Randomisierung (±{percent}%)"
+
+            if input_type == 'keyboard':
+                keyboard_key = config.get('keyboard_key', 'a').upper()
+                keyboard_mode = config.get('keyboard_mode', 'repeat')
+                kb_mode_text = "Halten" if keyboard_mode == 'hold' else "Wiederholen"
+                self.config_info.text = f"{input_type_text}: {keyboard_key} ({kb_mode_text}) | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}{feature_text}"
+            else:
+                self.config_info.text = f"{input_type_text} | Hotkey: {hotkey} | CPS: {cps} | Modus: {mode_text}{feature_text}"
 
     def save_config(self, widget):
         """Speichert die Konfiguration"""
@@ -573,7 +587,24 @@ class AutoinputApp(toga.App):
             from autoinput import autoclicker_quartz as autoclicker_module
             mode_name = "Toggle" if activation_mode == 'toggle' else "Hold"
 
-            self.log(f"▶️  Starte Autoclicker ({mode_name}-Modus)...")
+            # NEU: Unterschiedliche Logs je nach Modus
+            prevent_idle = config.get('prevent_idle', False)
+            randomize_timing = config.get('randomize_timing', False)
+
+            if prevent_idle:
+                # IDLE PREVENTION MODE
+                interval = config.get('idle_prevention_interval', 30)
+                self.log(f"▶️  Starte IDLE PREVENTION MODE")
+                self.log(f"🐭 Mausbewegungen alle {interval}s")
+                self.log(f"⚠️  KEIN Clicking - nur Anti-Idle Bewegungen!")
+                self.log(f"ℹ️  Gesteuert über Start/Stop Buttons (kein Hotkey)")
+            else:
+                # NORMALER CLICKING MODUS
+                self.log(f"▶️  Starte Autoclicker ({mode_name}-Modus)...")
+
+                if randomize_timing:
+                    percent = config.get('randomness_percent', 20)
+                    self.log(f"🎲 Timing-Randomisierung aktiviert: ±{percent}%")
 
             # Öffne Log-Datei zum Schreiben
             self.log_file_handle = open(self.log_file_path, 'w', buffering=1)

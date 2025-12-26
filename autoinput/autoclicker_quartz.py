@@ -483,70 +483,102 @@ def main():
 
     # Konfiguration laden
     _config = load_config()
-    _hotkey_keycode = parse_hotkey(_config.get('hotkey', 'shift'))
+    prevent_idle = _config.get('prevent_idle', False)
 
-    # Keyboard-Key parsen falls nötig
-    input_type = _config.get('input_type', 'mouse')
-    if input_type == 'keyboard':
-        _config['keyboard_keycode'] = parse_keyboard_key(_config.get('keyboard_key', 'a'))
+    # IDLE PREVENTION MODE: Vereinfachter Start
+    if prevent_idle:
+        interval = _config.get('idle_prevention_interval', 30)
+        print("=" * 50)
+        print(f"🐭 IDLE PREVENTION MODUS")
+        print("=" * 50)
+        print(f"Intervall: {interval}s")
+        print(f"Mausbewegungen: ±1-2 Pixel")
+        print("=" * 50)
+        print("💡 Läuft automatisch - kein Hotkey benötigt")
+        print("🛑 Stoppen über GUI Stop-Button")
+        print("=" * 50)
 
-    # Info ausgeben
-    activation_mode = _config.get('activation_mode', 'hold')
-    click_mode_names = {
-        'fast': 'Schnell (optimiert)',
-        'standard': 'Standard',
-        'separate': 'Separate Events',
-        'right': 'Rechtsklick'
-    }
-    click_mode = _config.get('click_mode', 'fast')
+        # Direkt starten - KEIN Event Tap benötigt
+        _clicking = True  # Global wird hier direkt gesetzt
 
-    print("=" * 50)
-    print(f"🎮 Autoinput ({activation_mode.upper()}-MODUS) gestartet")
-    print("=" * 50)
-    print(f"Input-Typ: {'Tastatur' if input_type == 'keyboard' else 'Maus'}")
-    if input_type == 'keyboard':
-        keyboard_mode = _config.get('keyboard_mode', 'repeat')
-        keyboard_key = _config.get('keyboard_key', 'a')
-        mode_name = 'Halten' if keyboard_mode == 'hold' else 'Wiederholen'
-        print(f"Tastatur-Taste: {keyboard_key}")
-        print(f"Tastatur-Modus: {mode_name}")
-    print(f"CPS: {_config['clicks_per_second']}")
-    print(f"Hotkey: {_config.get('hotkey', 'shift')}")
-    if input_type == 'mouse':
-        print(f"Position: {_config.get('target_position', 'aktuelle Mausposition')}")
-        print(f"Klick-Modus: {click_mode_names.get(click_mode, click_mode)}")
-    print(f"Logging: {'AN' if _config.get('enable_logging') else 'AUS'}")
-    print("=" * 50)
+        # Nur Click-Worker Thread starten
+        worker = threading.Thread(target=_click_worker, daemon=True)
+        worker.start()
 
-    if activation_mode == 'toggle':
-        print("💡 Drücke die Hotkey-Taste zum Starten/Stoppen")
+        # Auf Beenden warten
+        try:
+            while not _stop_thread:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\n🛑 Beende...")
+            _stop_thread = True
+
+    # NORMALER CLICKING MODUS
     else:
-        print("💡 Drücke und HALTE die Hotkey-Taste zum Klicken")
+        _hotkey_keycode = parse_hotkey(_config.get('hotkey', 'shift'))
 
-    print("🛑 Beenden mit ESC")
-    print("=" * 50)
+        # Keyboard-Key parsen falls nötig
+        input_type = _config.get('input_type', 'mouse')
+        if input_type == 'keyboard':
+            _config['keyboard_keycode'] = parse_keyboard_key(_config.get('keyboard_key', 'a'))
 
-    # Event Tap Thread starten (mit eigenem RunLoop)
-    event_tap_thread = threading.Thread(target=_event_tap_thread, daemon=True)
-    event_tap_thread.start()
+        # Info ausgeben
+        activation_mode = _config.get('activation_mode', 'hold')
+        click_mode_names = {
+            'fast': 'Schnell (optimiert)',
+            'standard': 'Standard',
+            'separate': 'Separate Events',
+            'right': 'Rechtsklick'
+        }
+        click_mode = _config.get('click_mode', 'fast')
 
-    # Click-Worker Thread starten
-    worker = threading.Thread(target=_click_worker, daemon=True)
-    worker.start()
+        print("=" * 50)
+        print(f"🎮 Autoinput ({activation_mode.upper()}-MODUS) gestartet")
+        print("=" * 50)
+        print(f"Input-Typ: {'Tastatur' if input_type == 'keyboard' else 'Maus'}")
+        if input_type == 'keyboard':
+            keyboard_mode = _config.get('keyboard_mode', 'repeat')
+            keyboard_key = _config.get('keyboard_key', 'a')
+            mode_name = 'Halten' if keyboard_mode == 'hold' else 'Wiederholen'
+            print(f"Tastatur-Taste: {keyboard_key}")
+            print(f"Tastatur-Modus: {mode_name}")
+        print(f"CPS: {_config['clicks_per_second']}")
+        print(f"Hotkey: {_config.get('hotkey', 'shift')}")
+        if input_type == 'mouse':
+            print(f"Position: {_config.get('target_position', 'aktuelle Mausposition')}")
+            print(f"Klick-Modus: {click_mode_names.get(click_mode, click_mode)}")
+        print(f"Logging: {'AN' if _config.get('enable_logging') else 'AUS'}")
+        print("=" * 50)
 
-    print("✅ Autoclicker läuft - warte auf Hotkey...")
+        if activation_mode == 'toggle':
+            print("💡 Drücke die Hotkey-Taste zum Starten/Stoppen")
+        else:
+            print("💡 Drücke und HALTE die Hotkey-Taste zum Klicken")
 
-    try:
-        # Hauptthread wartet auf Stop-Signal
-        while not _stop_thread:
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        print("\n🛑 Strg+C erkannt - beende Programm...")
-        _stop_thread = True
-    finally:
-        _release_held_key()
-        if _event_tap_runloop:
-            CFRunLoopStop(_event_tap_runloop)
+        print("🛑 Beenden mit ESC")
+        print("=" * 50)
+
+        # Event Tap Thread starten (mit eigenem RunLoop)
+        event_tap_thread = threading.Thread(target=_event_tap_thread, daemon=True)
+        event_tap_thread.start()
+
+        # Click-Worker Thread starten
+        worker = threading.Thread(target=_click_worker, daemon=True)
+        worker.start()
+
+        print("✅ Autoclicker läuft - warte auf Hotkey...")
+
+        try:
+            # Hauptthread wartet auf Stop-Signal
+            while not _stop_thread:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\n🛑 Strg+C erkannt - beende Programm...")
+            _stop_thread = True
+        finally:
+            _release_held_key()
+            if _event_tap_runloop:
+                CFRunLoopStop(_event_tap_runloop)
 
     print("\n✅ Autoclicker beendet")
     time.sleep(0.1)
