@@ -42,6 +42,9 @@ from Quartz import (
     CFRunLoopStop,
     kCGEventTapOptionDefault,
     kCGHeadInsertEventTap,
+    CGEventTapEnable,
+    kCGEventTapDisabledByTimeout,
+    kCGEventTapDisabledByUserInput,
 )
 from CoreFoundation import CFRelease
 import pyautogui
@@ -137,6 +140,7 @@ _held_key = None
 _hotkey_keycode = None
 _hotkey_was_pressed = False
 _event_tap_runloop = None
+_event_tap = None
 _last_activity_time = None
 
 def _log(msg):
@@ -161,28 +165,32 @@ def _perform_click(target_pos, click_mode):
     """Führt einen Maus-Klick aus"""
     global _click_counter
 
-    x, y = None, None
-    if target_pos is not None and isinstance(target_pos, list) and len(target_pos) == 2:
-        x, y = target_pos[0], target_pos[1]
+    try:
+        x, y = None, None
+        if target_pos is not None and isinstance(target_pos, list) and len(target_pos) == 2:
+            x, y = target_pos[0], target_pos[1]
 
-    if click_mode == 'fast' or click_mode == 'separate':
-        if x is not None and y is not None:
-            pyautogui.click(x=x, y=y, duration=0)
-        else:
-            pyautogui.click(duration=0)
-    elif click_mode == 'right':
-        if x is not None and y is not None:
-            pyautogui.click(x=x, y=y, button='right', duration=0)
-        else:
-            pyautogui.click(button='right', duration=0)
-    else:  # standard
-        if x is not None and y is not None:
-            pyautogui.click(x=x, y=y)
-        else:
-            pyautogui.click()
+        if click_mode == 'fast' or click_mode == 'separate':
+            if x is not None and y is not None:
+                pyautogui.click(x=x, y=y, duration=0)
+            else:
+                pyautogui.click(duration=0)
+        elif click_mode == 'right':
+            if x is not None and y is not None:
+                pyautogui.click(x=x, y=y, button='right', duration=0)
+            else:
+                pyautogui.click(button='right', duration=0)
+        else:  # standard
+            if x is not None and y is not None:
+                pyautogui.click(x=x, y=y)
+            else:
+                pyautogui.click()
 
-    _click_counter += 1
-    _verbose_log(f"🖱️  CLICK #{_click_counter}")
+        _click_counter += 1
+        _verbose_log(f"🖱️  CLICK #{_click_counter}")
+    except Exception as e:
+        print(f"⚠️  Fehler bei Click: {e}")
+        # Continue trotz Fehler
 
 def _perform_keyboard_action(keycode, keyboard_mode):
     """Führt Tastatur-Aktion aus mit CGEvent"""
@@ -280,9 +288,16 @@ _last_shift_state = False  # Track Shift state für FlagsChanged
 
 def event_tap_callback(proxy, event_type, event, refcon):
     """Callback für Event Tap - läuft im Event-Tap Thread"""
-    global _clicking, _stop_thread, _hotkey_was_pressed, _event_tap_runloop, _last_shift_state
+    global _clicking, _stop_thread, _hotkey_was_pressed, _event_tap_runloop, _last_shift_state, _event_tap
 
     try:
+        # Event Tap wurde von macOS disabled - re-enable!
+        if event_type == kCGEventTapDisabledByTimeout or event_type == kCGEventTapDisabledByUserInput:
+            print("⚠️  Event Tap wurde deaktiviert - reaktiviere...")
+            if _event_tap:
+                CGEventTapEnable(_event_tap, True)
+            return event
+
         _debug_log(f"EVENT TAP CALLBACK! Type: {event_type}")
 
         # Modifier-Keys (Shift, Ctrl, Alt) erzeugen FlagsChanged Events
@@ -361,14 +376,14 @@ def event_tap_callback(proxy, event_type, event, refcon):
 
 def _event_tap_thread():
     """Event Tap Thread mit eigenem RunLoop"""
-    global _event_tap_runloop
+    global _event_tap_runloop, _event_tap
 
     _debug_log("Event Tap Thread gestartet")
 
     # Event Tap erstellen - WICHTIG: Auch kCGEventFlagsChanged für Modifier-Keys!
     event_mask = (1 << kCGEventKeyDown) | (1 << kCGEventKeyUp) | (1 << kCGEventFlagsChanged)
 
-    event_tap = CGEventTapCreate(
+    _event_tap = CGEventTapCreate(
         kCGSessionEventTap,
         kCGHeadInsertEventTap,
         kCGEventTapOptionDefault,
@@ -377,14 +392,14 @@ def _event_tap_thread():
         None
     )
 
-    if not event_tap:
+    if not _event_tap:
         print("❌ FEHLER: Konnte Event Tap nicht erstellen!")
         print("⚠️  Stelle sicher, dass die App Accessibility-Berechtigung hat:")
         print("   Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Autoinput.app")
         return
 
     # RunLoop Source erstellen
-    runloop_source = CFMachPortCreateRunLoopSource(None, event_tap, 0)
+    runloop_source = CFMachPortCreateRunLoopSource(None, _event_tap, 0)
     _event_tap_runloop = CFRunLoopGetCurrent()
     CFRunLoopAddSource(_event_tap_runloop, runloop_source, kCFRunLoopCommonModes)
 
@@ -473,7 +488,7 @@ def cleanup_handler():
     _release_held_key()
 
 def main():
-    global _config, _hotkey_keycode, _stop_thread, _clicking, _hotkey_was_pressed, _click_counter, _held_key, _event_tap_runloop, _last_shift_state, _last_activity_time
+    global _config, _hotkey_keycode, _stop_thread, _clicking, _hotkey_was_pressed, _click_counter, _held_key, _event_tap_runloop, _event_tap, _last_shift_state, _last_activity_time
 
     # WICHTIG: State zurücksetzen für neuen Run!
     _stop_thread = False
@@ -482,6 +497,7 @@ def main():
     _click_counter = 0
     _held_key = None
     _event_tap_runloop = None
+    _event_tap = None
     _last_shift_state = False
     _last_activity_time = None
 
