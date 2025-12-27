@@ -43,6 +43,7 @@ from Quartz import (
     kCGEventTapOptionDefault,
     kCGHeadInsertEventTap,
 )
+from CoreFoundation import CFRelease
 import pyautogui
 
 # PyAutoGUI für Maus-Klicks (schnell und stabil)
@@ -195,6 +196,7 @@ def _perform_keyboard_action(keycode, keyboard_mode):
             # WICHTIG: Modifier-Flags löschen (Shift/Ctrl/Alt) damit keine großen Buchstaben entstehen
             CGEventSetFlags(key_down, 0)
             CGEventPost(kCGHIDEventTap, key_down)
+            CFRelease(key_down)  # Memory Leak Fix: Event freigeben
             _held_key = keycode
             _verbose_log(f"⌨️  KEY #{_click_counter} | HELD")
     elif keyboard_mode == 'repeat':
@@ -205,8 +207,11 @@ def _perform_keyboard_action(keycode, keyboard_mode):
         CGEventSetFlags(key_up, 0)
         CGEventPost(kCGHIDEventTap, key_down)
         CGEventPost(kCGHIDEventTap, key_up)
+        CFRelease(key_down)  # Memory Leak Fix: Events freigeben
+        CFRelease(key_up)
         _verbose_log(f"⌨️  KEY #{_click_counter} | PRESS+RELEASE")
 
+    CFRelease(source)  # Memory Leak Fix: Source freigeben
     _click_counter += 1
 
 def _release_held_key():
@@ -220,6 +225,8 @@ def _release_held_key():
             # Modifier-Flags löschen
             CGEventSetFlags(key_up, 0)
             CGEventPost(kCGHIDEventTap, key_up)
+            CFRelease(key_up)  # Memory Leak Fix: Event freigeben
+            CFRelease(source)  # Memory Leak Fix: Source freigeben
             _log(f"Taste (keycode={_held_key}) losgelassen")
         except Exception as e:
             print(f"⚠️  Fehler beim Loslassen der Taste: {e}")
